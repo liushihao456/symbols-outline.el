@@ -553,10 +553,9 @@ margin spec.")
         (setq tags (list))
         (goto-char (point-min))
         (while (not (eq (point) (point-max)))
-          (push (json-parse-string (buffer-substring-no-properties
-                                    (point)
-                                    (line-end-position)))
-                tags)
+          (setq linestr (buffer-substring-no-properties (point) (line-end-position)))
+          (when (and (string-prefix-p "{" linestr) (string-suffix-p "}" linestr))
+            (push (json-parse-string linestr) tags))
           (forward-line 1))))
     (reverse tags)))
 
