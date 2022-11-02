@@ -1,4 +1,4 @@
-;;; symbols-outline-tree.el --- Tree like view for symbols  -*- lexical-binding: t; -*-
+;;; symbols-outline-node.el --- Tree like view for symbols  -*- lexical-binding: t; -*-
 
 ;; Author: Shihao Liu
 ;; Keywords: outline symbols
@@ -44,7 +44,6 @@
   parent
   children
   collapsed
-  entry
   ov)
 
 (defun symbols-outline-node-size (node)
@@ -136,7 +135,7 @@ PRED is a function that takes one argument: node."
 (defun symbols-outline-node--prune-pseudo-nodes (node)
   "If NODE is a pseudo node, i.e., it has no entry property, move
 its children to its parent, and delete this node."
-  (when-let* (((not (symbols-outline-node-entry node)))
+  (when-let* (((not (symbols-outline-node-line node)))
               (parent (symbols-outline-node-parent node))
               (parent-children (symbols-outline-node-children parent))
               (children (symbols-outline-node-children node)))
@@ -182,6 +181,6 @@ its children to its parent, and delete this node."
                    (orig-collapsed (gethash (concat name kind signature) collapsed-table)))
          (setf (symbols-outline-node-collapsed node) t))))))
 
-(provide 'symbols-outline-tree)
+(provide 'symbols-outline-node)
 
-;;; symbols-outline-tree.el ends here
+;;; symbols-outline-node.el ends here

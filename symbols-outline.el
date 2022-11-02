@@ -35,7 +35,7 @@
 
 (require 'cl-macs)
 (require 'icon-tools)
-(require 'symbols-outline-tree)
+(require 'symbols-outline-node)
 
 (defgroup symbols-outline nil
   "Minor mode to display symbols outline on a side window."
@@ -100,9 +100,6 @@ characters."
 
 (defvar symbols-outline--origin nil
   "Original source buffer whose symbols outline is being shown.")
-
-(defvar symbols-outline-ctags-executable "ctags"
-  "Ctags executable.")
 
 (defvar symbols-outline--margin-spec-cache (cons nil nil)
   "Cache the expanded/collapsed indicators on the margin.  It's a
@@ -395,13 +392,6 @@ margin spec.")
               (when symbols-outline-use-icon ; icon
                 (concat (symbols-outline--get-kind-icon kind)
                         " ")))))
-    (add-text-properties 0 (length name)
-                         `(line ,line
-                           depth ,depth
-                           face ,face
-                           node ,node
-                           line-prefix ,lp)
-                         name)
 
     ;; Add chevrons indicating whether the node is collapsed
     (when (symbols-outline-node-children node)
@@ -414,8 +404,12 @@ margin spec.")
                    (symbols-outline--get-margin-spec-cache
                     (symbols-outline-node-collapsed node))))
 
-    ;; Symbol name
-    (insert name)))
+    (insert (propertize name
+                        'line line
+                        'depth depth
+                        'face face
+                        'node node
+                        'line-prefix lp))))
 
 (defcustom symbols-outline-function-node-kinds
   '("function" "method" "prototype" "annotation" "inline" "subst" "member")
@@ -432,72 +426,10 @@ margin spec.")
                                  symbols-outline-function-node-kinds))
                 (setf (symbols-outline-node-collapsed node) t)))))
 
-(defun symbols-outline--parse-entries-into-tree (entries)
-  "Parse ENTRIES into a tree structure."
-  (let ((root (make-symbols-outline-node))
-        )
-    (dolist (e entries)
-      (let* ((name (gethash "name" e))
-             (parent (gethash "scope" e))
-             (parent-kind (gethash "scopeKind" e))
-             (line (gethash "line" e))
-             (kind (gethash "kind" e))
-             (signature (gethash "signature" e))
-             node parent-node)
-        (when (and parent (eq major-mode 'c++-mode))
-          (setq parent (car (last (split-string parent "::")))))
-        (when (and parent (eq major-mode 'python-mode))
-          (setq parent (car (last (split-string parent "\\.")))))
-        ;; Current node
-        (if (and (setq node
-                       (seq-find (lambda (n) (and (equal name (symbols-outline-node-name n))
-                                              (equal kind (symbols-outline-node-kind n))))
-                                 (symbols-outline-node-children root)))
-                 (not (symbols-outline-node-entry node)))
-            ;; If it exists as a pseudo node, meaning it has been added as a
-            ;; pseudo parent node by its children, we complete its properties.
-            (progn
-              (setf (symbols-outline-node-kind node) kind)
-              (setf (symbols-outline-node-signature node) signature)
-              (setf (symbols-outline-node-line node) line)
-              (setf (symbols-outline-node-entry node) e))
-          ;; Else create it.
-          (setq node (make-symbols-outline-node :name name
-                                                :kind kind
-                                                :signature signature
-                                                :line line
-                                                :entry e))
-          )
-        ;; Parent node
-        (if parent
-            ;; Pseudo parent node. It may have already been added by other
-            ;; siblings; if not, add it.
-            (progn
-              (unless (setq parent-node
-                            (symbols-outline-node-find
-                             root
-                             (lambda (n) (and (equal parent (symbols-outline-node-name n))
-                                          (equal parent-kind (symbols-outline-node-kind n))))))
-                (setq parent-node (make-symbols-outline-node :name parent
-                                                             :kind parent-kind
-                                                             :parent root))
-                ;; Parent's parent defaults to root first
-                (push parent-node (symbols-outline-node-children root)))
-              ;; Node has parent, therefore delete node from the children list of root
-              (setf (symbols-outline-node-children root)
-                    (delq node (symbols-outline-node-children root))))
-          (setq parent-node root))
-        (setf (symbols-outline-node-parent node) parent-node)
-        ;; Add to parent's children list
-        (push node (symbols-outline-node-children parent-node))))
-    (symbols-outline-node--prune-pseudo-nodes root)
-    (symbols-outline-node--sort-children root)
-    root))
-
 (defun symbols-outline--insert-node (node depth)
   (let ((children-depth depth))
     ;; Insert current node
-    (when (symbols-outline-node-entry node)
+    (when (symbols-outline-node-line node)
       (symbols-outline--insert-line node depth)
       (insert "\n")
       (setq children-depth (1+ children-depth)))
@@ -543,22 +475,6 @@ margin spec.")
       (setq symbols-outline--origin selected-buf)
       (symbols-outline-refresh))))
 
-(defun symbols-outline--parse-ctags-json (json)
-  "Parse ctags JSON, either a string or a buffer."
-  (let ((tags))
-    (if (stringp json)
-        (setq tags (mapcar (lambda (l) (json-parse-string l))
-                           (split-string json "\n" t)))
-      (with-current-buffer json
-        (setq tags (list))
-        (goto-char (point-min))
-        (while (not (eq (point) (point-max)))
-          (setq linestr (buffer-substring-no-properties (point) (line-end-position)))
-          (when (and (string-prefix-p "{" linestr) (string-suffix-p "}" linestr))
-            (push (json-parse-string linestr) tags))
-          (forward-line 1))))
-    (reverse tags)))
-
 (defun symbols-outline--render ()
   (with-current-buffer (get-buffer-create symbols-outline-buffer-name)
     (let* ((tree (with-current-buffer symbols-outline--origin
@@ -573,13 +489,10 @@ margin spec.")
       (symbols-outline--after-move)
       (symbols-outline--follow-symbol))))
 
-(defun symbols-outline--refresh (entries)
-  "Refresh symbols outline buffer content given ENTRIES."
-  (when (length> entries 0)
-    (let ((buf (get-buffer-create symbols-outline-buffer-name))
-          tree)
+(defun symbols-outline--refresh-tree (tree)
+  "Refresh symbols outline buffer content given TREE."
+    (let ((buf (get-buffer-create symbols-outline-buffer-name)))
       (with-current-buffer symbols-outline--origin
-        (setq tree (symbols-outline--parse-entries-into-tree entries))
         (if symbols-outline--entries-tree
             ;; There exists previous tree -> reuse its collapse states
             (symbols-outline-node--copy-collapse-state
@@ -598,42 +511,25 @@ margin spec.")
           (symbols-outline--render)
           (if (not (eq major-mode 'symbols-outline-mode))
               (symbols-outline-mode))
-          (setq symbols-outline--refreshing nil))))))
+          (setq symbols-outline--refreshing nil)))))
+
+(defvar symbols-outline-fetch-fn #'symbols-outline-ctags-fetch
+  "Function to fetch symbols.  By async design, after it got the
+symbols as a tree, it should call `symbols-outline--refresh-tree'
+on it in order to refresh the symbols outline buffer.
+
+The tree should be of type `symbols-outline-node'.  The root of
+the tree will be a pseudo node and the rendering will start from
+its children.")
 
 (defun symbols-outline-refresh ()
   "Refresh symbols outline buffer."
   (interactive)
+  ;; Only refresh when the origin buffer has file name or in the outline buffer
   (when (or (buffer-file-name symbols-outline--origin)
             (equal buffer-file-name symbols-outline-buffer-name))
-    (let* ((buf (get-buffer-create "*symbols-outline-ctags-output*"))
-           (existing-process (get-buffer-process buf))
-           (default-directory (with-current-buffer symbols-outline--origin
-                                default-directory)))
-      (when existing-process (kill-process existing-process))
-      (setq symbols-outline--refreshing t)
-      (with-current-buffer buf
-        (erase-buffer)
-        (setq buffer-undo-list t))
-      (let* ((process (start-file-process "symbols-outline-ctags"
-                                          buf
-                                          symbols-outline-ctags-executable
-                                          "--output-format=json"
-                                          "--pseudo-tags={TAG_KIND_SEPARATOR}"
-                                          "--kinds-all=*"
-                                          "--fields=NznsS"
-                                          "--sort=no"
-                                          (expand-file-name
-                                           (buffer-file-name
-                                            symbols-outline--origin)))))
-        (set-process-sentinel
-         process
-         (lambda (proc status)
-           (if (string-match-p "hangup\\|killed" status)
-               (setq symbols-outline--refreshing nil)
-             (if-let* ((n (with-current-buffer buf (count-lines (point-min) (point-max))))
-                       ((< n symbols-outline-max-symbols-threshold)))
-                 (symbols-outline--refresh (symbols-outline--parse-ctags-json buf))
-               (message "Too many symbols (%s)" n)))))))))
+    (setq symbols-outline--refreshing t)
+    (funcall symbols-outline-fetch-fn)))
 
 ;;;###autoload
 (defun symbols-outline-show ()
