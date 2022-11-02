@@ -40,6 +40,15 @@
   :type 'string
   :group 'symbols-outline)
 
+(defvar symbols-outline-ctags-lang-separator-alist
+  '(("h" . "::")
+    ("hpp" . "::")
+    ("cc" . "::")
+    ("cpp" . "::")
+    ("cxx" . "::")
+    ("md" . "\"\""))
+  "Alist that maps languages (file extensions) to separators. ")
+
 (defvar symbols-outline--origin)
 (defvar symbols-outline-max-symbols-threshold)
 
@@ -68,13 +77,13 @@
              (signature (gethash "signature" e))
              node parent-node)
         (when parent
-          (if (string-match-p "::" parent)
-              (setq parent (car (last (split-string parent "::"))))
-            (setq parent (car (last (split-string parent "\\."))))))
-        ;; (when (and parent (eq major-mode 'c++-mode))
-        ;;   (setq parent (car (last (split-string parent "::")))))
-        ;; (when (and parent (eq major-mode 'python-mode))
-        ;;   (setq parent (car (last (split-string parent "\\.")))))
+          (let* ((ext (file-name-extension
+                       (buffer-file-name symbols-outline--origin)))
+                 (separator
+                  (or (cdr (assoc ext
+                                  symbols-outline-ctags-lang-separator-alist))
+                      "\\.")))
+            (setq parent (car (last (split-string parent separator))))))
         ;; Current node
         (if (and (setq node
                        (seq-find (lambda (n) (and (equal name (symbols-outline-node-name n))
@@ -133,7 +142,6 @@
                                         buf
                                         symbols-outline-ctags-executable
                                         "--output-format=json"
-                                        "--pseudo-tags={TAG_KIND_SEPARATOR}"
                                         "--kinds-all=*"
                                         "--fields=NznsS"
                                         "--sort=no"
@@ -146,10 +154,11 @@
          (unless (string-match-p "hangup\\|killed" status)
            (if-let* ((n (with-current-buffer buf (count-lines (point-min) (point-max))))
                      ((< n symbols-outline-max-symbols-threshold)))
-               (thread-last buf
-                            (symbols-outline-ctags--parse-output)
-                            (symbols-outline--parse-entries-into-tree)
-                            (symbols-outline--refresh-tree))
+               (when (> n 0)
+                 (thread-last buf
+                              (symbols-outline-ctags--parse-output)
+                              (symbols-outline--parse-entries-into-tree)
+                              (symbols-outline--refresh-tree)))
              (message "Too many symbols (%s)" n))))))))
 
 (provide 'symbols-outline-ctags)
