@@ -34,8 +34,8 @@
 ;;; Code:
 
 (require 'cl-macs)
-(require 'icon-tools)
 (require 'symbols-outline-node)
+(require 'symbols-outline-nerd-icon)
 
 (defgroup symbols-outline nil
   "Minor mode to display symbols outline on a side window."
@@ -76,23 +76,9 @@ symbols-outline window.  Its length has to be 1."
   :type 'number
   :group 'symbols-outline)
 
-(defcustom symbols-outline-use-icon t
-  "Whether to show icons."
+(defcustom symbols-outline-use-nerd-icon-in-tui t
+  "Whether use nerd font icons in TUI mode."
   :type 'boolean
-  :group 'symbols-outline)
-
-(defcustom symbols-outline-collapsed-margin-indicator "+"
-  "String indicator of a collapsed node on the margin if
-`symbols-outline-use-icon' is nil.  It should be no longer than 2
-characters."
-  :type 'string
-  :group 'symbols-outline)
-
-(defcustom symbols-outline-expanded-margin-indicator "-"
-  "String indicator of a expanded node on the margin if
-`symbols-outline-use-icon' is nil.  It should be no longer than 2
-characters."
-  :type 'string
   :group 'symbols-outline)
 
 (defvar symbols-outline-buffer-name "*Outline*"
@@ -106,15 +92,32 @@ characters."
 cons cell whose car/cdr is the expanded/collapsed indicator
 margin spec.")
 
+(defvar symbols-outline--svg-icon-dir
+  (expand-file-name "icons" (file-name-directory load-file-name)))
+
 (defvar-local symbols-outline--entries-tree nil)
 
+(defun symbols-outline--get-svg-icon (icon-name)
+  `(image
+    :type svg
+    :file ,(concat
+            (file-name-as-directory
+             symbols-outline--svg-icon-dir)
+            icon-name
+            ".svg")
+    :ascent center
+    :scale 1))
+
+(defun symbols-outline--get-svg-icon-as-str (icon-name)
+  (propertize "--"
+              'display (symbols-outline--get-svg-icon icon-name)))
+
 (defun symbols-outline--get-collapse-indicator (collapsed)
-  (if symbols-outline-use-icon
-      (funcall (if (display-graphic-p) #'icon-tools-svg-icon #'icon-tools-nerd-icon-str)
-               (if collapsed "chevron-right" "chevron-down")
-               :face 'font-lock-doc-face)
-    (if collapsed symbols-outline-collapsed-margin-indicator
-      symbols-outline-expanded-margin-indicator)))
+  (if (display-graphic-p)
+      (symbols-outline--get-svg-icon (if collapsed "chevron-right" "chevron-down"))
+    (if symbols-outline-use-nerd-icon-in-tui
+        (symbols-outline-nerd-icon-get (if collapsed "chevron-right" "chevron-down"))
+      (if collapsed "+" "-"))))
 
 (defun symbols-outline--get-margin-spec-cache (collapsed)
   (if-let (spec (funcall
@@ -128,39 +131,67 @@ margin spec.")
 
 (defun symbols-outline--get-kind-icon (kind)
   "Get icon for KIND."
-  (icon-tools-icon-for-symbol-kind kind))
+  (if (display-graphic-p)
+      (symbols-outline--get-svg-icon-as-str kind)
+    (when symbols-outline-use-nerd-icon-in-tui
+      (symbols-outline-nerd-icon-get kind))))
 
 (defvar symbols-outline--kind-face-alist
   '(("function" tree-sitter-hl-face:function font-lock-function-name-face)
     ("method" tree-sitter-hl-face:function font-lock-function-name-face)
     ("prototype" tree-sitter-hl-face:function font-lock-function-name-face)
     ("annotation" tree-sitter-hl-face:function font-lock-function-name-face)
+    ("constructor" tree-sitter-hl-face:constructor font-lock-function-name-face)
     ("class" tree-sitter-hl-face:type font-lock-type-face)
     ("struct" tree-sitter-hl-face:type font-lock-type-face)
     ("interface" tree-sitter-hl-face:type font-lock-type-face)
     ("union" tree-sitter-hl-face:type font-lock-type-face)
     ("enum" tree-sitter-hl-face:type font-lock-type-face)
     ("enumerator" tree-sitter-hl-face:property.definition font-lock-variable-name-face)
+    ("enummember" tree-sitter-hl-face:property.definition font-lock-variable-name-face)
     ("using" font-lock-constant-face)
     ("namespace" font-lock-constant-face)
     ("variable" tree-sitter-hl-face:variable font-lock-variable-name-face)
+    ("externvar" tree-sitter-hl-face:variable font-lock-variable-name-face)
     ("local" tree-sitter-hl-face:variable font-lock-variable-name-face)
     ("member" tree-sitter-hl-face:property.definition font-lock-variable-name-face)
     ("field" tree-sitter-hl-face:property.definition font-lock-variable-name-face)
     ("macro" font-lock-variable-name-face)
+    ("string" tree-sitter-hl-face:string font-lock-variable-name-face)
+    ("boolean" tree-sitter-hl-face:variable.special font-lock-variable-name-face)
+    ("array" tree-sitter-hl-face:variable.special font-lock-variable-name-face)
+    ("number" tree-sitter-hl-face:number font-lock-variable-name-face)
+    ("object" tree-sitter-hl-face:variable font-lock-variable-name-face)
+    ("misc" tree-sitter-hl-face:variable.special font-lock-variable-name-face)
+    ("operator" tree-sitter-hl-face:operator font-lock-variable-name-face)
     ("parameter" tree-sitter-hl-face:variable.parameter font-lock-variable-name-face)
+    ("macroparam" tree-sitter-hl-face:type.parameter font-lock-variable-name-face)
+    ("typeparameter" tree-sitter-hl-face:type.parameter font-lock-variable-name-face)
+    ("tparam" tree-sitter-hl-face:type.parameter font-lock-variable-name-face)
+    ("event" tree-sitter-hl-face:variable font-lock-variable-name-face)
     ("typedef" tree-sitter-hl-face:type font-lock-type-face)
     ("package" font-lock-constant-face)
-    ;; Elisp
+    ("module" font-lock-constant-face)
+    ("key" tree-sitter-hl-face:keyword font-lock-variable-name-face)
+    ("null" tree-sitter-hl-face:variable font-lock-variable-name-face)
     ("derivedMode" font-lock-function-name-face)
     ("majorMode" font-lock-function-name-face)
     ("minorMode" font-lock-function-name-face)
     ("inline" font-lock-function-name-face)
+    ("subst" font-lock-function-name-face)
     ("group" font-lock-type-face)
+    ("error" error)
     ("custom" font-lock-variable-name-face)
     ("face" font-lock-variable-name-face)
     ("const" font-lock-variable-name-face)
     ("alias" font-lock-function-name-face)
+    ("unknown" warning)
+    ("constant" tree-sitter-hl-face:constant font-lock-variable-name-face)
+    ("property" tree-sitter-hl-face:property font-lock-variable-name-face)
+    ("chapter" markdown-header-face-1)
+    ("section" markdown-header-face-2 org-level-2)
+    ("subsection" markdown-header-face-3)
+    ("part" org-level-1)
     ))
 
 (defun symbols-outline--get-kind-face (kind)
@@ -389,7 +420,8 @@ margin spec.")
          (lp (concat
               " "
               (make-string (* 2 depth) ?\s)  ; indentation
-              (when symbols-outline-use-icon ; icon
+              (when (or (display-graphic-p)  ; icon
+                        symbols-outline-use-nerd-icon-in-tui)
                 (concat (symbols-outline--get-kind-icon kind)
                         " ")))))
 
@@ -508,9 +540,9 @@ margin spec.")
                       (and buffer-file-name
                            (file-name-directory
                             (buffer-file-name symbols-outline--origin))))
-          (symbols-outline--render)
           (if (not (eq major-mode 'symbols-outline-mode))
               (symbols-outline-mode))
+          (symbols-outline--render)
           (setq symbols-outline--refreshing nil)))))
 
 (defvar symbols-outline-fetch-fn #'symbols-outline-ctags-fetch
