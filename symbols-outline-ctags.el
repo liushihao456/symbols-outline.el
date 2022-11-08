@@ -83,7 +83,7 @@
                   (or (cdr (assoc ext
                                   symbols-outline-ctags-lang-separator-alist))
                       "\\.")))
-            (setq parent (car (last (split-string parent separator))))))
+            (setq parent (split-string parent separator))))
         ;; Current node
         (if (and (setq node
                        (seq-find (lambda (n) (and (equal name (symbols-outline-node-name n))
@@ -102,29 +102,38 @@
                                                 :kind kind
                                                 :signature signature
                                                 :line line)))
-        ;; Parent node
+        ;; Parent nodes
         (if parent
-            ;; Pseudo parent node. It may have already been added by other
-            ;; siblings; if not, add it.
             (progn
-              (unless (setq parent-node
-                            (symbols-outline-node-find
-                             root
-                             (lambda (n) (and (equal parent (symbols-outline-node-name n))
-                                         (equal parent-kind (symbols-outline-node-kind n))))))
-                (setq parent-node (make-symbols-outline-node :name parent
-                                                             :kind parent-kind
-                                                             :parent root))
-                ;; Parent's parent defaults to root first
-                (push parent-node (symbols-outline-node-children root)))
               ;; Node has parent, therefore delete node from the children list of root
               (setf (symbols-outline-node-children root)
-                    (delq node (symbols-outline-node-children root))))
+                    (delq node (symbols-outline-node-children root)))
+              ;; Pseudo parent nodes. They may have already been added by other
+              ;; siblings; if not, add them.
+              (let ((last-parent root))
+                (cl-loop for p in parent
+                         for lastp = (equal p (car (last parent)))
+                         do
+                         (unless (setq parent-node
+                                       (symbols-outline-node-find
+                                        root
+                                        (lambda (n) (and
+                                                (equal p (symbols-outline-node-name n))
+                                                (if lastp
+                                                    (equal parent-kind
+                                                           (symbols-outline-node-kind n))
+                                                  t)))))
+                           (setq parent-node (if lastp
+                                                 (make-symbols-outline-node :name p
+                                                                            :kind parent-kind)
+                                               (make-symbols-outline-node :name p)))
+                           ;; Parent's parent set to last-parent
+                           (push parent-node (symbols-outline-node-children last-parent)))
+                         (setq last-parent parent-node))))
           (setq parent-node root))
         (setf (symbols-outline-node-parent node) parent-node)
         ;; Add to parent's children list
         (push node (symbols-outline-node-children parent-node))))
-    (symbols-outline-node--prune-pseudo-nodes root)
     (symbols-outline-node--sort-children root)
     root))
 

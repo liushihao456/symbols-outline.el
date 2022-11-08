@@ -209,7 +209,7 @@ margin spec.")
       (get-text-property (1- (point)) 'face))))
 
 (defun symbols-outline--display-symbol-in-origin ()
-  (let ((line (get-text-property (line-beginning-position) 'line)))
+  (when-let (line (get-text-property (line-beginning-position) 'line))
     (with-selected-window (get-buffer-window symbols-outline--origin)
       (goto-char (point-min))
       (forward-line (1- line))
@@ -422,7 +422,7 @@ margin spec.")
               (make-string (* 2 depth) ?\s)  ; indentation
               (when (or (display-graphic-p)  ; icon
                         symbols-outline-use-nerd-icon-in-tui)
-                (concat (symbols-outline--get-kind-icon kind)
+                (concat (symbols-outline--get-kind-icon (or kind "null"))
                         " ")))))
 
     ;; Add chevrons indicating whether the node is collapsed
@@ -461,7 +461,7 @@ margin spec.")
 (defun symbols-outline--insert-node (node depth)
   (let ((children-depth depth))
     ;; Insert current node
-    (when (symbols-outline-node-line node)
+    (when (symbols-outline-node-name node)
       (symbols-outline--insert-line node depth)
       (insert "\n")
       (setq children-depth (1+ children-depth)))

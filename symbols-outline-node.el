@@ -154,8 +154,10 @@ its children to its parent, and delete this node."
   "Sort NODE's children based on their line numbers."
   (setf (symbols-outline-node-children node)
         (sort (nreverse (symbols-outline-node-children node))
-              (lambda (a b) (< (symbols-outline-node-line a)
-                           (symbols-outline-node-line b)))))
+              (lambda (a b) (if-let ((line-a (symbols-outline-node-line a))
+                                (line-b (symbols-outline-node-line b)))
+                           (< line-a line-b)
+                         t))))
   (when-let (children (symbols-outline-node-children node))
     (mapc #'symbols-outline-node--sort-children children)))
 
