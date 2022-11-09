@@ -102,8 +102,8 @@
     ("part"          . " ")
 
     ;; Chevrons
-    ("chevron-down"  . " ")
-    ("chevron-right" . " ")
+    ("chevron-down"  . " ")
+    ("chevron-right" . " ")
     ))
 
 (defun symbols-outline-nerd-icon-get (icon-name)
