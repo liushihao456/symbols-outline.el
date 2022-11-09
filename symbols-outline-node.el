@@ -50,18 +50,18 @@
   "Return the total number of nodes of tree NODE."
   (if-let (children (symbols-outline-node-children node))
       (thread-last children
-                    (mapcar #'symbols-outline-node-size)
-                    (apply #'+)
-                    (1+))
+                   (mapcar #'symbols-outline-node-size)
+                   (apply #'+)
+                   (1+))
     1))
 
 (defun symbols-outline-node-size-parents (node)
   "Return the total number of nodes of tree NODE that have children."
   (if-let (children (symbols-outline-node-children node))
       (thread-last children
-                    (mapcar #'symbols-outline-node-size-parents)
-                    (apply #'+)
-                    (1+))
+                   (mapcar #'symbols-outline-node-size-parents)
+                   (apply #'+)
+                   (1+))
     0))
 
 (defun symbols-outline-node-depth-non-collpased (node)
@@ -155,9 +155,9 @@ its children to its parent, and delete this node."
   (setf (symbols-outline-node-children node)
         (sort (nreverse (symbols-outline-node-children node))
               (lambda (a b) (if-let ((line-a (symbols-outline-node-line a))
-                                (line-b (symbols-outline-node-line b)))
-                           (< line-a line-b)
-                         t))))
+                                     (line-b (symbols-outline-node-line b)))
+                                (< line-a line-b)
+                              t))))
   (when-let (children (symbols-outline-node-children node))
     (mapc #'symbols-outline-node--sort-children children)))
 

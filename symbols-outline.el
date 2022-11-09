@@ -126,8 +126,8 @@ margin spec.")
     (funcall (if collapsed #'setcdr #'setcar)
              symbols-outline--margin-spec-cache
              (propertize " " 'display
-                      `((margin right-margin)
-                        ,(symbols-outline--get-collapse-indicator collapsed))))))
+                         `((margin right-margin)
+                           ,(symbols-outline--get-collapse-indicator collapsed))))))
 
 (defun symbols-outline--get-kind-icon (kind)
   "Get icon for KIND."
@@ -419,7 +419,7 @@ margin spec.")
          (line (symbols-outline-node-line node))
          (lp (concat
               " "
-              (make-string (* 2 depth) ?\s)  ; indentation
+              (make-string depth ?\s)  ; indentation
               (when (or (display-graphic-p)  ; icon
                         symbols-outline-use-nerd-icon-in-tui)
                 (concat (symbols-outline--get-kind-icon (or kind "null"))
@@ -454,9 +454,9 @@ margin spec.")
   (symbols-outline-node-foreach
    tree
    (lambda (node) (when (and (symbols-outline-node-children node)
-                         (member (symbols-outline-node-kind node)
-                                 symbols-outline-function-node-kinds))
-                (setf (symbols-outline-node-collapsed node) t)))))
+                             (member (symbols-outline-node-kind node)
+                                     symbols-outline-function-node-kinds))
+                    (setf (symbols-outline-node-collapsed node) t)))))
 
 (defun symbols-outline--insert-node (node depth)
   (let ((children-depth depth))
@@ -523,27 +523,27 @@ margin spec.")
 
 (defun symbols-outline--refresh-tree (tree)
   "Refresh symbols outline buffer content given TREE."
-    (let ((buf (get-buffer-create symbols-outline-buffer-name)))
-      (with-current-buffer symbols-outline--origin
-        (if symbols-outline--entries-tree
-            ;; There exists previous tree -> reuse its collapse states
-            (symbols-outline-node--copy-collapse-state
-             symbols-outline--entries-tree tree)
-          ;; Else -> maybe collapse function nodes
-          (when symbols-outline-collapse-functions-on-startup
-            (symbols-outline--collapse-function-nodes tree)))
-        (setq symbols-outline--entries-tree tree))
-      ;; Render the symbols
-      (with-current-buffer buf
-        (let* ((inhibit-read-only t))
-          (setq-local default-directory
-                      (and buffer-file-name
-                           (file-name-directory
-                            (buffer-file-name symbols-outline--origin))))
-          (if (not (eq major-mode 'symbols-outline-mode))
-              (symbols-outline-mode))
-          (symbols-outline--render)
-          (setq symbols-outline--refreshing nil)))))
+  (let ((buf (get-buffer-create symbols-outline-buffer-name)))
+    (with-current-buffer symbols-outline--origin
+      (if symbols-outline--entries-tree
+          ;; There exists previous tree -> reuse its collapse states
+          (symbols-outline-node--copy-collapse-state
+           symbols-outline--entries-tree tree)
+        ;; Else -> maybe collapse function nodes
+        (when symbols-outline-collapse-functions-on-startup
+          (symbols-outline--collapse-function-nodes tree)))
+      (setq symbols-outline--entries-tree tree))
+    ;; Render the symbols
+    (with-current-buffer buf
+      (let* ((inhibit-read-only t))
+        (setq-local default-directory
+                    (and buffer-file-name
+                         (file-name-directory
+                          (buffer-file-name symbols-outline--origin))))
+        (if (not (eq major-mode 'symbols-outline-mode))
+            (symbols-outline-mode))
+        (symbols-outline--render)
+        (setq symbols-outline--refreshing nil)))))
 
 (defvar symbols-outline-fetch-fn #'symbols-outline-ctags-fetch
   "Function to fetch symbols.  By async design, after it got the

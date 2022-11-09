@@ -87,7 +87,7 @@
         ;; Current node
         (if (and (setq node
                        (seq-find (lambda (n) (and (equal name (symbols-outline-node-name n))
-                                             (equal kind (symbols-outline-node-kind n))))
+                                                  (equal kind (symbols-outline-node-kind n))))
                                  (symbols-outline-node-children root)))
                  (not (symbols-outline-node-line node)))
             ;; If it exists as a pseudo node (has only name and kind
@@ -118,15 +118,17 @@
                                        (symbols-outline-node-find
                                         root
                                         (lambda (n) (and
-                                                (equal p (symbols-outline-node-name n))
-                                                (if lastp
-                                                    (equal parent-kind
-                                                           (symbols-outline-node-kind n))
-                                                  t)))))
+                                                     (equal p (symbols-outline-node-name n))
+                                                     (if lastp
+                                                         (equal parent-kind
+                                                                (symbols-outline-node-kind n))
+                                                       t)))))
                            (setq parent-node (if lastp
                                                  (make-symbols-outline-node :name p
-                                                                            :kind parent-kind)
-                                               (make-symbols-outline-node :name p)))
+                                                                            :kind parent-kind
+                                                                            :parent last-parent)
+                                               (make-symbols-outline-node :name p
+                                                                          :parent last-parent)))
                            ;; Parent's parent set to last-parent
                            (push parent-node (symbols-outline-node-children last-parent)))
                          (setq last-parent parent-node))))
