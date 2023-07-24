@@ -17,6 +17,14 @@ This package displays all the symbols (including classes, functions, variables, 
 
 Symbols-outline.el relies on a backend to get the symbols. It works best if ctags is installed. Or if `lsp-mode` is active, you can use the lsp backend. See `symbols-outline-fetch-fn`.
 
+# Installation
+
+Clone this repository, and add it to your load-path:
+
+``` emacs-lisp
+(add-to-list 'load-path "/path/to/symbols-outline/")
+```
+
 # Example configuration
 
 ``` emacs-lisp
