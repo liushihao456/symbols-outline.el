@@ -11,7 +11,7 @@ This package displays all the symbols (including classes, functions, variables, 
 
 # Demo
 
-<img src="./screen_record.png">
+<img src="./screen_record.gif">
 
 # Requirements
 
