@@ -106,9 +106,16 @@
     ("chevron-right" . " ")
     ))
 
-(defun symbols-outline-nerd-icon-get (icon-name)
-  "Return the nerd font icon for ICON-NAME."
-  (cdr (assoc icon-name symbols-outline-nerd-icon-alist)))
+(defun symbols-outline-nerd-icon-str (icon-name &rest args)
+  "Return the nerd font icon for ICON-NAME.
+
+ARGS are additional plist arguments where properties FACE and
+SCALE are supported. "
+  (propertize (or (cdr (assoc icon-name symbols-outline-nerd-icon-alist)) "")
+              'face `(:foreground
+                      ,(face-attribute
+                        (or (plist-get args :face) 'default)
+                        :foreground))))
 
 (provide 'symbols-outline-nerd-icon)
 

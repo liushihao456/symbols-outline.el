@@ -36,6 +36,7 @@
 (require 'cl-macs)
 (require 'symbols-outline-node)
 (require 'symbols-outline-nerd-icon)
+(require 'symbols-outline-svg-icon)
 
 (defgroup symbols-outline nil
   "Minor mode to display symbols outline on a side window."
@@ -92,32 +93,24 @@ symbols-outline window.  Its length has to be 1."
 cons cell whose car/cdr is the expanded/collapsed indicator
 margin spec.")
 
-(defvar symbols-outline--svg-icon-dir
-  (expand-file-name "icons" (file-name-directory load-file-name)))
-
 (defvar-local symbols-outline--entries-tree nil)
 
-(defun symbols-outline--get-svg-icon (icon-name)
-  `(image
-    :type svg
-    :file ,(concat
-            (file-name-as-directory
-             symbols-outline--svg-icon-dir)
-            icon-name
-            ".svg")
-    :ascent center
-    :scale 1))
-
-(defun symbols-outline--get-svg-icon-as-str (icon-name)
-  (propertize "--"
-              'display (symbols-outline--get-svg-icon icon-name)))
+(defun symbols-outline--get-kind-icon (kind)
+  "Get icon for KIND."
+  (let ((face (symbols-outline--get-kind-face kind)))
+    (if (display-graphic-p)
+        (symbols-outline-svg-icon-str kind :face face)
+      (when symbols-outline-use-nerd-icon-in-tui
+        (symbols-outline-nerd-icon-str kind :face face)))))
 
 (defun symbols-outline--get-collapse-indicator (collapsed)
-  (if (display-graphic-p)
-      (symbols-outline--get-svg-icon (if collapsed "chevron-right" "chevron-down"))
-    (if symbols-outline-use-nerd-icon-in-tui
-        (symbols-outline-nerd-icon-get (if collapsed "chevron-right" "chevron-down"))
-      (if collapsed "+" "-"))))
+  (let* ((icon (if collapsed "chevron-right" "chevron-down"))
+         (face (symbols-outline--get-kind-face icon)))
+    (if (display-graphic-p)
+        (symbols-outline-svg-icon icon :face face)
+      (if symbols-outline-use-nerd-icon-in-tui
+          (symbols-outline-nerd-icon-str icon :face face)
+        (if collapsed "+" "-")))))
 
 (defun symbols-outline--get-margin-spec-cache (collapsed)
   (if-let (spec (funcall
@@ -128,13 +121,6 @@ margin spec.")
              (propertize " " 'display
                          `((margin right-margin)
                            ,(symbols-outline--get-collapse-indicator collapsed))))))
-
-(defun symbols-outline--get-kind-icon (kind)
-  "Get icon for KIND."
-  (if (display-graphic-p)
-      (symbols-outline--get-svg-icon-as-str kind)
-    (when symbols-outline-use-nerd-icon-in-tui
-      (symbols-outline-nerd-icon-get kind))))
 
 (defvar symbols-outline--kind-face-alist
   '(("function" tree-sitter-hl-face:function font-lock-function-name-face)
