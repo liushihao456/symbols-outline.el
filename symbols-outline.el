@@ -395,7 +395,8 @@ margin spec.")
   (if (display-graphic-p)
       (setq-local right-margin-width 2)
     (setq-local right-margin-width 1))
-  (set-window-buffer (selected-window) (current-buffer)))
+  ;; (set-window-buffer (selected-window) (current-buffer))
+  )
 
 (defun symbols-outline--insert-line (node depth)
   "Make a line of SYMBOL at DEPTH."
@@ -526,8 +527,6 @@ margin spec.")
                     (and buffer-file-name
                          (file-name-directory
                           (buffer-file-name symbols-outline--origin))))
-        (if (not (eq major-mode 'symbols-outline-mode))
-            (symbols-outline-mode))
         (symbols-outline--render)
         (setq symbols-outline--refreshing nil)))))
 
@@ -554,6 +553,10 @@ its children.")
   "Show symbols outline in side window."
   (interactive)
   (setq symbols-outline--origin (current-buffer))
+  (let ((buf (get-buffer-create symbols-outline-buffer-name)))
+    (with-current-buffer buf
+      (unless (eq major-mode 'symbols-outline-mode)
+        (symbols-outline-mode))))
   (if-let* ((buf (get-buffer-create symbols-outline-buffer-name))
             (window (get-buffer-window buf)))
       (select-window window)
