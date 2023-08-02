@@ -1,9 +1,10 @@
 ;;; symbols-outline-ctags.el --- Ctags backend for symbols-outline  -*- lexical-binding: t; -*-
 
 ;; Author: Shihao Liu
-;; Keywords: outline symbols
+;; Keywords: outlines
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "27.1"))
+;; URL: https://github.com/liushihao456/symbols-outline.el
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -65,7 +66,7 @@
         (forward-line 1)))
     (reverse tags)))
 
-(defun symbols-outline--parse-entries-into-tree (entries)
+(defun symbols-outline-ctags--parse-entries-into-tree (entries)
   "Parse ENTRIES into a tree structure."
   (let ((root (make-symbols-outline-node)))
     (dolist (e entries)
@@ -168,7 +169,7 @@
                (when (> n 0)
                  (thread-last buf
                               (symbols-outline-ctags--parse-output)
-                              (symbols-outline--parse-entries-into-tree)
+                              (symbols-outline-ctags--parse-entries-into-tree)
                               (symbols-outline--refresh-tree)))
              (message "Too many symbols (%s)" n))))))))
 

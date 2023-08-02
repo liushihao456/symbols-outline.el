@@ -1,9 +1,10 @@
 ;;; symbols-outline-lsp.el --- Lsp backend for symbols-outline  -*- lexical-binding: t; -*-
 
 ;; Author: Shihao Liu
-;; Keywords: outline symbols
+;; Keywords: outlines
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "27.1"))
+;; URL: https://github.com/liushihao456/symbols-outline.el
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -33,7 +34,6 @@
 
 ;;; Code:
 
-(require 'cl-macs)
 (require 'symbols-outline-node)
 (require 'lsp-mode)
 

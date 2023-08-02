@@ -1,9 +1,10 @@
 ;;; symbols-outline.el --- Tree like view for symbols  -*- lexical-binding: t; -*-
 
 ;; Author: Shihao Liu
-;; Keywords: outline symbols
+;; Keywords: outlines
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "27.1"))
+;; URL: https://github.com/liushihao456/symbols-outline.el
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -33,7 +34,7 @@
 
 ;;; Code:
 
-(require 'cl-macs)
+(require 'cl-lib)
 (require 'symbols-outline-node)
 (require 'symbols-outline-nerd-icon)
 (require 'symbols-outline-svg-icon)
@@ -177,8 +178,7 @@ margin spec.")
     ("chapter" markdown-header-face-1)
     ("section" markdown-header-face-2 org-level-2)
     ("subsection" markdown-header-face-3)
-    ("part" org-level-1)
-    ))
+    ("part" org-level-1)))
 
 (defun symbols-outline--get-kind-face (kind)
   "Get face for node of KIND."
@@ -565,8 +565,7 @@ its children.")
                 buf `((side . ,(if (eq symbols-outline-window-position 'left)
                                    'left 'right))
                       (slot . 1)
-                      (window-width . 30)
-                      ))))
+                      (window-width . 30)))))
       (select-window win)
       (set-window-start win 1)
       (set-window-dedicated-p win t)

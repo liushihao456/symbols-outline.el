@@ -1,9 +1,10 @@
 ;;; symbols-outline-svg-icon.el --- Svg icons for symbols outline  -*- lexical-binding: t; -*-
 
 ;; Author: Shihao Liu
-;; Keywords: outline symbols
+;; Keywords: outlines
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "27.1"))
+;; URL: https://github.com/liushihao456/symbols-outline.el
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -32,10 +33,14 @@
 ;; --------------------------------------
 
 ;;; Code:
+
+(require 'svg)
+(require 'color)
+
 (defvar symbols-outline-svg-icon-dir
   (expand-file-name "icons" (file-name-directory load-file-name)))
 
-(defvar symbols-outline-icon-width 2)
+(defvar symbols-outline-svg-icon-width 2)
 
 (defvar symbols-outline-svg-icon-cache
   (make-hash-table :test 'equal :size 250))
@@ -67,7 +72,7 @@
     (insert-file-contents (symbols-outline-svg-icon-filepath icon-name))
     (xml-parse-region (point-min) (point-max))))
 
-(defun symbols-outline--svg-icon-emacs-color-to-svg-color (color-name)
+(defun symbols-outline-svg-icon--emacs-color-to-svg-color (color-name)
   "Convert Emacs COLOR-NAME to #rrggbb form.
 If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
   (let ((rgb-color (color-name-to-rgb color-name)))
@@ -75,11 +80,11 @@ If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
         (apply #'color-rgb-to-hex (append rgb-color '(2)))
       color-name)))
 
-(defun symbols-outline--svg-icon-alist-to-keyword-plist (alist)
+(defun symbols-outline-svg-icon--alist-to-keyword-plist (alist)
   (cl-loop for (head . tail) in alist
            nconc (list (intern (concat ":" (symbol-name head))) tail)))
 
-(defun symbols-outline--svg-icon-recursively-copy-children (node1 node2 fg-color)
+(defun symbols-outline-svg-icon--recursively-copy-children (node1 node2 fg-color)
   (let ((children (xml-node-children node2)))
     (when (and node1 children)
       (dolist (child children)
@@ -92,8 +97,8 @@ If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
             (setq node1-child
                   (apply 'svg-node
                          (append (list node1 (xml-node-name child))
-                                 (symbols-outline--svg-icon-alist-to-keyword-plist attrs))))
-            (symbols-outline--svg-icon-recursively-copy-children node1-child child fg-color)))))))
+                                 (symbols-outline-svg-icon--alist-to-keyword-plist attrs))))
+            (symbols-outline-svg-icon--recursively-copy-children node1-child child fg-color)))))))
 
 (defvar symbols-outline-svg-icon-scale-alist
   '(("tag" . 0.8)
@@ -116,13 +121,13 @@ If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
 
 (defvar symbols-outline-svg-icon-base-scale 1.0)
 
-(defun symbols-outline--svg-icon-get-viewbox-multiplier (icon-name)
+(defun symbols-outline-svg-icon--get-viewbox-multiplier (icon-name)
   (let ((cell (assoc icon-name symbols-outline-svg-icon-scale-alist)))
     (if cell
         (/ 1 (* (cdr cell) symbols-outline-svg-icon-base-scale))
       (/ 1 symbols-outline-svg-icon-base-scale))))
 
-(defun symbols-outline--svg-icon-get-face-attribute-deep (face attribute)
+(defun symbols-outline-svg-icon--get-face-attribute-deep (face attribute)
   (when (facep face)
     (let ((face0 (face-attribute face :inherit))
           (val (face-attribute face attribute)))
@@ -160,8 +165,8 @@ Icon is drawn with the foreground of FACE and scaled with SCALE."
                               (nth 3 viewbox)
                             (string-to-number (cdr (assq 'height (xml-node-attributes (car root)))))))
 
-             ;; Set icon size (in pixels) to `symbols-outline-icon-width'x1 characters
-             (svg-width  (* (window-font-width) symbols-outline-icon-width))
+             ;; Set icon size (in pixels) to `symbols-outline-svg-icon-width'x1 characters
+             (svg-width  (* (window-font-width) symbols-outline-svg-icon-width))
 
              ;; Use 2 * (`window-font-width') instead, because on Windows, if
              ;; `window-font-height' returns value larger than 2 *
@@ -175,8 +180,8 @@ Icon is drawn with the foreground of FACE and scaled with SCALE."
              ;; Scale by zooming in/out the svg viewbox
              (multiplier (if scale
                              (* (/ 1 scale)
-                                (symbols-outline--svg-icon-get-viewbox-multiplier icon-name))
-                           (symbols-outline--svg-icon-get-viewbox-multiplier icon-name)))
+                                (symbols-outline-svg-icon--get-viewbox-multiplier icon-name))
+                           (symbols-outline-svg-icon--get-viewbox-multiplier icon-name)))
              (d-view-width (* (- multiplier 1) view-width))
              (view-x (- view-x (/ d-view-width 2)))
              (view-width (+ view-width d-view-width))
@@ -187,20 +192,14 @@ Icon is drawn with the foreground of FACE and scaled with SCALE."
              (svg-viewbox (format "%f %f %f %f" view-x view-y view-width view-height))
 
              ;; Foreground and background
-             (fg-color (symbols-outline--svg-icon-get-face-attribute-deep face :foreground))
-             (fg-color (symbols-outline--svg-icon-emacs-color-to-svg-color
+             (fg-color (symbols-outline-svg-icon--get-face-attribute-deep face :foreground))
+             (fg-color (symbols-outline-svg-icon--emacs-color-to-svg-color
                         (or (when (facep fg-color)
                               (face-foreground fg-color nil t))
                             (when (not (eq fg-color 'unspecified)) fg-color)
                             (face-attribute 'default :foreground))))
              ;; Use only transparent background for now
              (bg-color "transparent")
-             ;; (bg-color (symbols-outline--svg-icon-get-face-attribute-deep face :background))
-             ;; (bg-color (symbols-outline--svg-icon-emacs-color-to-svg-color
-             ;;            (or (when (facep bg-color)
-             ;;                  (face-background bg-color nil t))
-             ;;                (when (not (eq bg-color 'unspecified)) bg-color)
-             ;;                "transparent")))
 
              (svg (svg-create svg-width svg-height
                               :viewBox svg-viewbox
@@ -212,7 +211,7 @@ Icon is drawn with the foreground of FACE and scaled with SCALE."
                          :fill bg-color))
 
         ;; Insert all parsed nodes, replacing colors with fg-color
-        (symbols-outline--svg-icon-recursively-copy-children svg (car root) fg-color)
+        (symbols-outline-svg-icon--recursively-copy-children svg (car root) fg-color)
 
         (apply #'symbols-outline-svg-icon-cache-add (svg-image svg :ascent 'center :scale 1)
                icon-name args)))))
@@ -224,7 +223,7 @@ ARGS are additional plist arguments where properties FACE and
 SCALE are supported. "
   (if (image-type-available-p 'svg)
       (propertize
-       (make-string symbols-outline-icon-width ?\-)
+       (make-string symbols-outline-svg-icon-width ?\-)
        'display (apply #'symbols-outline-svg-icon icon-name args))
     ""))
 
