@@ -67,7 +67,6 @@
   :group 'symbols-outline)
 
 (defcustom symbols-outline-current-symbol-indicator
-  "›"
   "Indicator string that marks the current symbol at point in the
 symbols-outline window.  Its length has to be 1."
   :type 'string
@@ -90,9 +89,8 @@ symbols-outline window.  Its length has to be 1."
   "Original source buffer whose symbols outline is being shown.")
 
 (defvar symbols-outline--margin-spec-cache (cons nil nil)
-  "Cache the expanded/collapsed indicators on the margin.  It's a
-cons cell whose car/cdr is the expanded/collapsed indicator
-margin spec.")
+  "Cache the expanded/collapsed indicators on the margin.
+It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec.")
 
 (defvar-local symbols-outline--entries-tree nil)
 
@@ -209,7 +207,8 @@ margin spec.")
         (aref symbols-outline-current-symbol-indicator 0)))
 
 (defun symbols-outline-next (n)
-  "Move to the next symbol."
+  "Move to the next symbol.
+Argument N means number of symbols to move."
   (interactive "P")
   (symbols-outline--before-move)
   (forward-line (or n 1))
@@ -218,7 +217,8 @@ margin spec.")
   (symbols-outline--after-move))
 
 (defun symbols-outline-prev (n)
-  "Move to the previous symbol."
+  "Move to the previous symbol.
+Argument N means number of symbols to move."
   (interactive "P")
   (symbols-outline-next (- (or n 1))))
 
@@ -353,7 +353,7 @@ margin spec.")
     (message "No children at the current node.")))
 
 (defun symbols-outline-cycle-visibility-globally ()
-  "Globally cycle through visibility levels like org-mode shift-tab."
+  "Globally cycle through visibility levels like `org-mode' shift-tab."
   (interactive)
   (goto-char (point-min))
   (let* ((tree (with-current-buffer symbols-outline--origin
@@ -531,9 +531,10 @@ margin spec.")
         (setq symbols-outline--refreshing nil)))))
 
 (defvar symbols-outline-fetch-fn #'symbols-outline-ctags-fetch
-  "Function to fetch symbols.  By async design, after it got the
-symbols as a tree, it should call `symbols-outline--refresh-tree'
-on it in order to refresh the symbols outline buffer.
+  "Function to fetch symbols.
+By async design, after it got the symbols as a tree, it should
+call `symbols-outline--refresh-tree' on it in order to refresh
+the symbols outline buffer.
 
 The tree should be of type `symbols-outline-node'.  The root of
 the tree will be a pseudo node and the rendering will start from
