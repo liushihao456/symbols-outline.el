@@ -67,6 +67,7 @@
   :group 'symbols-outline)
 
 (defcustom symbols-outline-current-symbol-indicator
+  "›"
   "Indicator string that marks the current symbol at point in the
 symbols-outline window.  Its length has to be 1."
   :type 'string
