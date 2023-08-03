@@ -1,4 +1,4 @@
-;;; symbols-outline-follow-mode.el --- Tree like view for symbols  -*- lexical-binding: t; -*-
+;;; symbols-outline-follow-mode.el --- Symbols outline follow mode  -*- lexical-binding: t; -*-
 
 ;; Author: Shihao Liu
 ;; Keywords: outlines

@@ -1,6 +1,6 @@
 # Introduction
 
-This package displays all the symbols (including classes, functions, variables, etc., depending on what the backend outputs), in an outline window.
+This package displays all the symbols (including classes, functions, variables, etc., depending on what the backend outputs), in an outline view.
 
 # Features
 

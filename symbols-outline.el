@@ -1,4 +1,4 @@
-;;; symbols-outline.el --- Tree like view for symbols  -*- lexical-binding: t; -*-
+;;; symbols-outline.el --- Display symbols (functions, variables, etc) in an outline view  -*- lexical-binding: t; -*-
 
 ;; Author: Shihao Liu
 ;; Keywords: outlines

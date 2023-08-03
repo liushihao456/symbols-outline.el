@@ -1,4 +1,4 @@
-;;; symbols-outline-node.el --- Tree like view for symbols  -*- lexical-binding: t; -*-
+;;; symbols-outline-node.el --- Symbols tree structure node  -*- lexical-binding: t; -*-
 
 ;; Author: Shihao Liu
 ;; Keywords: outlines
