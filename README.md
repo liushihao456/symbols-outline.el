@@ -52,3 +52,11 @@ Clone this repository, and add it to your load-path:
 | S-TAB | symbols-outline-cycle-visibility-globally | Fold/unfold globally                                                              |
 | RET   | symbols-outline-visit                     | Go to the symbol under cursor in the original buffer                              |
 | M-RET | symbols-outline-visit-and-quit            | Go to the symbol under cursor in the original buffer and close the outline window |
+
+# Customizations
+
+- `symbols-outline-window-position`: the outline window position. Default `right`.
+- `symbols-outline-window-width`: the outline side window width. Default `30`.
+- `symbols-outline-no-other-window`: if `t`, the outline side window will not be selected with the `other-window` command. Instead, you can switch to the outline window with `symbols-outline-show`. Default `t`.
+- `symbols-outline-no-delete-other-window`: if `t`, the outline side window will not be deleted by the `delete-other-windows` command. Default `t`.
+- `symbols-outline-collapse-functions-on-startup`: whether to collapse function nodes on startup to hide the parameter nodes.

@@ -51,6 +51,11 @@
           (const left))
   :group 'symbols-outline)
 
+(defcustom symbols-outline-window-width 30
+  "Width of symbols outline side window."
+  :type 'integer
+  :group 'symbols-outline)
+
 (defcustom symbols-outline-no-other-window t
   "Make `other-window' ignore the symbols-outline window."
   :type 'boolean
@@ -567,7 +572,7 @@ its children.")
                 buf `((side . ,(if (eq symbols-outline-window-position 'left)
                                    'left 'right))
                       (slot . 1)
-                      (window-width . 30)))))
+                      (window-width . ,symbols-outline-window-width)))))
       (select-window win)
       (set-window-start win 1)
       (set-window-dedicated-p win t)
