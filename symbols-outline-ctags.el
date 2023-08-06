@@ -141,11 +141,10 @@
     root))
 
 ;;;###autoload
-(defun symbols-outline-ctags-fetch ()
+(defun symbols-outline-ctags-fetch (refresh-fn)
   (let* ((buf (get-buffer-create "*symbols-outline-ctags-output*"))
          (existing-process (get-buffer-process buf))
-         (default-directory (with-current-buffer symbols-outline--origin
-                              default-directory)))
+         (default-directory (buffer-local-value 'default-directory symbols-outline--origin)))
     (when existing-process (kill-process existing-process))
     (with-current-buffer buf
       (erase-buffer)
@@ -170,7 +169,7 @@
                  (thread-last buf
                               (symbols-outline-ctags--parse-output)
                               (symbols-outline-ctags--parse-entries-into-tree)
-                              (symbols-outline--refresh-tree)))
+                              (funcall refresh-fn)))
              (message "Too many symbols (%s)" n))))))))
 
 (provide 'symbols-outline-ctags)

@@ -95,7 +95,7 @@
     root))
 
 ;;;###autoload
-(defun symbols-outline-lsp-fetch ()
+(defun symbols-outline-lsp-fetch (refresh-fn)
   (when (lsp--find-workspaces-for "textDocument/documentSymbol")
     (lsp-request-async "textDocument/documentSymbol"
                        (lsp-make-document-symbol-params
@@ -103,7 +103,7 @@
                        (lambda (document-symbols)
                          (thread-last document-symbols
                                       (symbols-outline-lsp--convert)
-                                      (symbols-outline--refresh-tree)))
+                                      (funcall refresh-fn)))
                        :mode 'alive)))
 
 (provide 'symbols-outline-lsp)

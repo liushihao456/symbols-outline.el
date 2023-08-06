@@ -501,7 +501,7 @@ Argument N means number of symbols to move."
       (symbols-outline-refresh))))
 
 (defun symbols-outline--render ()
-  (with-current-buffer (get-buffer-create symbols-outline-buffer-name)
+  (with-current-buffer symbols-outline-buffer-name
     (let* ((tree (with-current-buffer symbols-outline--origin
                    symbols-outline--entries-tree))
            (symbols-outline--refreshing nil)
@@ -516,7 +516,6 @@ Argument N means number of symbols to move."
 
 (defun symbols-outline--refresh-tree (tree)
   "Refresh symbols outline buffer content given TREE."
-  (let ((buf (get-buffer-create symbols-outline-buffer-name)))
     (with-current-buffer symbols-outline--origin
       (if symbols-outline--entries-tree
           ;; There exists previous tree -> reuse its collapse states
@@ -527,20 +526,16 @@ Argument N means number of symbols to move."
           (symbols-outline--collapse-function-nodes tree)))
       (setq symbols-outline--entries-tree tree))
     ;; Render the symbols
-    (with-current-buffer buf
+    (with-current-buffer symbols-outline-buffer-name
       (let* ((inhibit-read-only t))
-        (setq-local default-directory
-                    (and buffer-file-name
-                         (file-name-directory
-                          (buffer-file-name symbols-outline--origin))))
         (symbols-outline--render)
-        (setq symbols-outline--refreshing nil)))))
+        (setq symbols-outline--refreshing nil))))
 
 (defvar symbols-outline-fetch-fn #'symbols-outline-ctags-fetch
   "Function to fetch symbols.
 By async design, after it got the symbols as a tree, it should
-call `symbols-outline--refresh-tree' on it in order to refresh
-the symbols outline buffer.
+take an argument of refresh-fn and funcall it upon the symbols
+tree in order to refresh the symbols outline buffer.
 
 The tree should be of type `symbols-outline-node'.  The root of
 the tree will be a pseudo node and the rendering will start from
@@ -552,8 +547,11 @@ its children.")
   ;; Only refresh when the origin buffer has file name or in the outline buffer
   (when (or (buffer-file-name symbols-outline--origin)
             (equal buffer-file-name symbols-outline-buffer-name))
+    (with-current-buffer symbols-outline-buffer-name
+      (setq-local default-directory
+                  (buffer-local-value 'default-directory symbols-outline--origin)))
     (setq symbols-outline--refreshing t)
-    (funcall symbols-outline-fetch-fn)))
+    (funcall symbols-outline-fetch-fn #'symbols-outline--refresh-tree)))
 
 ;;;###autoload
 (defun symbols-outline-show ()
@@ -563,21 +561,20 @@ its children.")
   (let ((buf (get-buffer-create symbols-outline-buffer-name)))
     (with-current-buffer buf
       (unless (eq major-mode 'symbols-outline-mode)
-        (symbols-outline-mode))))
-  (if-let* ((buf (get-buffer-create symbols-outline-buffer-name))
-            (window (get-buffer-window buf)))
-      (select-window window)
-    (symbols-outline-refresh)
-    (let ((win (display-buffer-in-side-window
-                buf `((side . ,(if (eq symbols-outline-window-position 'left)
-                                   'left 'right))
-                      (slot . 1)
-                      (window-width . ,symbols-outline-window-width)))))
-      (select-window win)
-      (set-window-start win 1)
-      (set-window-dedicated-p win t)
-      (set-window-parameter win 'no-other-window symbols-outline-no-other-window)
-      (set-window-parameter win 'no-delete-other-windows symbols-outline-no-delete-other-window))))
+        (symbols-outline-mode)))
+    (if-let ((window (get-buffer-window buf)))
+        (select-window window)
+      (symbols-outline-refresh)
+      (let ((win (display-buffer-in-side-window
+                  buf `((side . ,(if (eq symbols-outline-window-position 'left)
+                                     'left 'right))
+                        (slot . 1)
+                        (window-width . ,symbols-outline-window-width)))))
+        (select-window win)
+        (set-window-start win 1)
+        (set-window-dedicated-p win t)
+        (set-window-parameter win 'no-other-window symbols-outline-no-other-window)
+        (set-window-parameter win 'no-delete-other-windows symbols-outline-no-delete-other-window)))))
 
 (provide 'symbols-outline)
 
