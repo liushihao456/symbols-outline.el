@@ -3,7 +3,6 @@
 ;; Author: Shihao Liu
 ;; Keywords: outlines
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "27.1"))
 ;; URL: https://github.com/liushihao456/symbols-outline.el
 
 ;; This file is not part of GNU Emacs.
@@ -121,7 +120,7 @@ PRED is a function that takes one argument: node."
                if res return res))))
 
 (defun symbols-outline-node-find-symbol-at-line (node ln)
-  "Find the symbol in the tree NODE that corresponds to original buffer's LINE."
+  "Find the symbol in NODE that corresponds to original buffer's line LN."
   (let ((line 0) res)
     (symbols-outline-node-foreach-non-collapsed
      node
@@ -134,7 +133,9 @@ PRED is a function that takes one argument: node."
     res))
 
 (defun symbols-outline-node--prune-pseudo-nodes (node)
-  "If NODE is a pseudo node, i.e., it has no entry property, move
+  "Prune pseudo nodes from the tree NODE.
+
+If NODE is a pseudo node, i.e., it has no entry property, move
 its children to its parent, and delete this node."
   (when-let* (((not (symbols-outline-node-line node)))
               (parent (symbols-outline-node-parent node))
@@ -163,6 +164,7 @@ its children to its parent, and delete this node."
     (mapc #'symbols-outline-node--sort-children children)))
 
 (defun symbols-outline-node--copy-collapse-state (from to)
+  "Copy the collapse state from FROM to TO."
   (let ((collapsed-table (make-hash-table :size (symbols-outline-node-size-parents
                                                  from)
                                           :test 'equal)))

@@ -3,7 +3,6 @@
 ;; Author: Shihao Liu
 ;; Keywords: outlines
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "27.1"))
 ;; URL: https://github.com/liushihao456/symbols-outline.el
 
 ;; This file is not part of GNU Emacs.
@@ -111,7 +110,7 @@
   "Return the nerd font icon for ICON-NAME.
 
 ARGS are additional plist arguments where properties FACE and
-SCALE are supported. "
+SCALE are supported."
   (propertize (or (cdr (assoc icon-name symbols-outline-nerd-icon-alist)) "")
               'face `(:foreground
                       ,(face-attribute

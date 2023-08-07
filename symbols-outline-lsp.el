@@ -3,7 +3,6 @@
 ;; Author: Shihao Liu
 ;; Keywords: outlines
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "27.1"))
 ;; URL: https://github.com/liushihao456/symbols-outline.el
 
 ;; This file is not part of GNU Emacs.
@@ -35,9 +34,9 @@
 ;;; Code:
 
 (require 'symbols-outline-node)
-(require 'lsp-mode)
 
 (defun symbols-outline-lsp--kind-name (kind-no)
+  "Get the kind name of lsp mode KIND-NO."
   (pcase kind-no
 	(1 "file")
 	(2 "module")
@@ -68,6 +67,7 @@
     (_ "misc")))
 
 (defun symbols-outline-lsp--convert-internal (ht-symbols tree)
+  "Convert hashtable HT-SYMBOLS to the tree TREE."
   (mapc (lambda (symbol)
           (let ((node (make-symbols-outline-node
                        :name (gethash "name" symbol)
@@ -89,22 +89,33 @@
         (nreverse (symbols-outline-node-children tree))))
 
 (defun symbols-outline-lsp--convert (ht-symbols)
+  "Convert hashtable HT-SYMBOLS to a symbols-outline tree."
   (let ((root (make-symbols-outline-node)))
     (symbols-outline-lsp--convert-internal ht-symbols root)
     (symbols-outline-node--sort-children root)
     root))
 
+(declare-function lsp--find-workspaces-for "ext:lsp-mode")
+(declare-function lsp-request-async "ext:lsp-mode")
+(declare-function lsp--text-document-identifier "ext:lsp-mode")
+(declare-function lsp-make-document-symbol-params "ext:lsp-protocol")
+
 ;;;###autoload
 (defun symbols-outline-lsp-fetch (refresh-fn)
-  (when (lsp--find-workspaces-for "textDocument/documentSymbol")
-    (lsp-request-async "textDocument/documentSymbol"
-                       (lsp-make-document-symbol-params
-                        :text-document (lsp--text-document-identifier))
-                       (lambda (document-symbols)
-                         (thread-last document-symbols
-                                      (symbols-outline-lsp--convert)
-                                      (funcall refresh-fn)))
-                       :mode 'alive)))
+  "Retrieve symbols via lsp-mode.
+Argument REFRESH-FN should be called upon the retrieved symbols tree."
+  (if (not (featurep 'lsp-mode))
+      (message "Cannot fetch symbols with lsp-mode because it's not installed.")
+    (require 'lsp-mode)
+    (when (lsp--find-workspaces-for "textDocument/documentSymbol")
+      (lsp-request-async "textDocument/documentSymbol"
+                         (lsp-make-document-symbol-params
+                          :text-document (lsp--text-document-identifier))
+                         (lambda (document-symbols)
+                           (thread-last document-symbols
+                                        (symbols-outline-lsp--convert)
+                                        (funcall refresh-fn)))
+                         :mode 'alive))))
 
 (provide 'symbols-outline-lsp)
 

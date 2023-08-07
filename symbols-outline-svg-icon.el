@@ -3,7 +3,6 @@
 ;; Author: Shihao Liu
 ;; Keywords: outlines
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "27.1"))
 ;; URL: https://github.com/liushihao456/symbols-outline.el
 
 ;; This file is not part of GNU Emacs.
@@ -46,6 +45,10 @@
   (make-hash-table :test 'equal :size 250))
 
 (defun symbols-outline-svg-icon-cache-add (icon icon-name &rest args)
+  "Add ICON of name ICON-NAME with args to cache and return the icon.
+
+ARGS are additional plist arguments where properties FACE and SCALE are
+supported."
   (puthash (format "%s-%s-%s-%d-%d"
                    icon-name
                    (symbol-name (or (plist-get args :face) 'default))
@@ -55,6 +58,10 @@
            icon symbols-outline-svg-icon-cache))
 
 (defun symbols-outline-svg-icon-cache-get (icon-name &rest args)
+  "Get icon of name ICON-NAME from cache.
+
+ARGS are additional plist arguments where properties FACE and SCALE are
+supported."
   (gethash (format "%s-%s-%s-%d-%d"
                    icon-name
                    (symbol-name (or (plist-get args :face) 'default))
@@ -64,10 +71,12 @@
            symbols-outline-svg-icon-cache))
 
 (defun symbols-outline-svg-icon-filepath (icon-name)
+  "Get the file path of the svg file for ICON-NAME."
   (concat (file-name-as-directory symbols-outline-svg-icon-dir)
           icon-name ".svg"))
 
 (defun symbols-outline-svg-icon-parse (icon-name)
+  "Parse the svg icon ICON-NAME into xml structure."
   (with-temp-buffer
     (insert-file-contents (symbols-outline-svg-icon-filepath icon-name))
     (xml-parse-region (point-min) (point-max))))
@@ -81,10 +90,12 @@ If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
       color-name)))
 
 (defun symbols-outline-svg-icon--alist-to-keyword-plist (alist)
+  "Convert ALIST to plist."
   (cl-loop for (head . tail) in alist
            nconc (list (intern (concat ":" (symbol-name head))) tail)))
 
 (defun symbols-outline-svg-icon--recursively-copy-children (node1 node2 fg-color)
+  "Copy svg xml struct NODE1 to NODE2 and set the fill color to FG-COLOR."
   (let ((children (xml-node-children node2)))
     (when (and node1 children)
       (dolist (child children)
@@ -92,10 +103,10 @@ If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
           (let ((attrs (xml-node-attributes child))
                 (node1-child))
             (dolist (attr attrs)
-              (when (color-defined-p (cdr attr))
+              (when (string-equal (car attr) "fill")
                 (setcdr attr fg-color)))
             (setq node1-child
-                  (apply 'svg-node
+                  (apply #'svg-node
                          (append (list node1 (xml-node-name child))
                                  (symbols-outline-svg-icon--alist-to-keyword-plist attrs))))
             (symbols-outline-svg-icon--recursively-copy-children node1-child child fg-color)))))))
@@ -122,12 +133,14 @@ If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
 (defvar symbols-outline-svg-icon-base-scale 1.0)
 
 (defun symbols-outline-svg-icon--get-viewbox-multiplier (icon-name)
+  "Get viewbox multiplier for ICON-NAME."
   (let ((cell (assoc icon-name symbols-outline-svg-icon-scale-alist)))
     (if cell
         (/ 1 (* (cdr cell) symbols-outline-svg-icon-base-scale))
       (/ 1 symbols-outline-svg-icon-base-scale))))
 
 (defun symbols-outline-svg-icon--get-face-attribute-deep (face attribute)
+  "Get the ATTRIBUTE from FACE."
   (when (facep face)
     (let ((face0 (face-attribute face :inherit))
           (val (face-attribute face attribute)))
@@ -155,7 +168,7 @@ Icon is drawn with the foreground of FACE and scaled with SCALE."
 
              ;; Read original viewbox
              (viewbox-str (cdr (assq 'viewBox (xml-node-attributes (car root)))))
-             (viewbox (when viewbox-str (mapcar 'string-to-number (split-string viewbox-str))))
+             (viewbox (when viewbox-str (mapcar #'string-to-number (split-string viewbox-str))))
              (view-x (if viewbox (nth 0 viewbox) 0))
              (view-y (if viewbox (nth 1 viewbox) 0))
              (view-width (if viewbox
@@ -220,7 +233,7 @@ Icon is drawn with the foreground of FACE and scaled with SCALE."
   "Return the svg font icon for ICON-NAME.
 
 ARGS are additional plist arguments where properties FACE and
-SCALE are supported. "
+SCALE are supported."
   (if (image-type-available-p 'svg)
       (propertize
        (make-string symbols-outline-svg-icon-width ?\-)

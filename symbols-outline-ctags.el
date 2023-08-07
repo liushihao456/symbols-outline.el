@@ -3,7 +3,6 @@
 ;; Author: Shihao Liu
 ;; Keywords: outlines
 ;; Version: 1.0.0
-;; Package-Requires: ((emacs "27.1"))
 ;; URL: https://github.com/liushihao456/symbols-outline.el
 
 ;; This file is not part of GNU Emacs.
@@ -48,7 +47,7 @@
     ("cpp" . "::")
     ("cxx" . "::")
     ("md" . "\"\""))
-  "Alist that maps languages (file extensions) to separators. ")
+  "Alist that maps languages (file extensions) to separators.")
 
 (defvar symbols-outline--origin)
 (defvar symbols-outline-max-symbols-threshold)
@@ -58,7 +57,7 @@
   (let (linestr tags)
     (with-current-buffer buf
       (goto-char (point-min))
-      (while (not (eq (point) (point-max)))
+      (while (not (eobp))
         (setq linestr
               (buffer-substring-no-properties (point) (line-end-position)))
         (when (and (string-prefix-p "{" linestr) (string-suffix-p "}" linestr))
@@ -142,6 +141,8 @@
 
 ;;;###autoload
 (defun symbols-outline-ctags-fetch (refresh-fn)
+  "Retrieve symbols using ctags.
+Argument REFRESH-FN should be called upon the retrieved symbols tree."
   (let* ((buf (get-buffer-create "*symbols-outline-ctags-output*"))
          (existing-process (get-buffer-process buf))
          (default-directory (buffer-local-value 'default-directory symbols-outline--origin)))
@@ -161,7 +162,7 @@
                                           symbols-outline--origin)))))
       (set-process-sentinel
        process
-       (lambda (proc status)
+       (lambda (_proc status)
          (unless (string-match-p "hangup\\|killed" status)
            (if-let* ((n (with-current-buffer buf (count-lines (point-min) (point-max))))
                      ((< n symbols-outline-max-symbols-threshold)))

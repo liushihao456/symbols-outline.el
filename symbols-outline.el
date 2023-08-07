@@ -1,4 +1,4 @@
-;;; symbols-outline.el --- Display symbols (functions, variables, etc) in an outline view  -*- lexical-binding: t; -*-
+;;; symbols-outline.el --- Display symbols (functions, variables, etc) in outline view  -*- lexical-binding: t; -*-
 
 ;; Author: Shihao Liu
 ;; Keywords: outlines
@@ -36,6 +36,7 @@
 
 (require 'cl-lib)
 (require 'symbols-outline-node)
+(require 'symbols-outline-ctags)
 (require 'symbols-outline-nerd-icon)
 (require 'symbols-outline-svg-icon)
 
@@ -71,10 +72,10 @@
   :type 'boolean
   :group 'symbols-outline)
 
-(defcustom symbols-outline-current-symbol-indicator
-  "›"
-  "Indicator string that marks the current symbol at point in the
-symbols-outline window.  Its length has to be 1."
+(defcustom symbols-outline-current-symbol-indicator "›"
+  "Indicator string that marks the current symbol at point in the outline window.
+
+Its length has to be 1."
   :type 'string
   :group 'symbols-outline)
 
@@ -109,6 +110,7 @@ It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec."
         (symbols-outline-nerd-icon-str kind :face face)))))
 
 (defun symbols-outline--get-collapse-indicator (collapsed)
+  "Get the indicator for whether the symbol node is COLLAPSED."
   (let* ((icon (if collapsed "chevron-right" "chevron-down"))
          (face (symbols-outline--get-kind-face icon)))
     (if (display-graphic-p)
@@ -118,6 +120,7 @@ It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec."
         (if collapsed "+" "-")))))
 
 (defun symbols-outline--get-margin-spec-cache (collapsed)
+  "Get the cached margin spec for whether the symbol node is COLLAPSED."
   (if-let (spec (funcall
                  (if collapsed #'cdr #'car) symbols-outline--margin-spec-cache))
       spec
@@ -199,6 +202,7 @@ It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec."
       (get-text-property (1- (point)) 'face))))
 
 (defun symbols-outline--display-symbol-in-origin ()
+  "Locate the symbol at point in the original buffer."
   (when-let (line (get-text-property (line-beginning-position) 'line))
     (with-selected-window (get-buffer-window symbols-outline--origin)
       (goto-char (point-min))
@@ -206,9 +210,11 @@ It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec."
       (recenter))))
 
 (defun symbols-outline--before-move ()
+  "Delete the indicator for current symbol before movement."
   (aset (get-text-property (line-beginning-position) 'line-prefix) 0 ?\s))
 
 (defun symbols-outline--after-move ()
+  "Set the indicator for current symbol after movement."
   (aset (get-text-property (line-beginning-position) 'line-prefix) 0
         (aref symbols-outline-current-symbol-indicator 0)))
 
@@ -218,7 +224,7 @@ Argument N means number of symbols to move."
   (interactive "P")
   (symbols-outline--before-move)
   (forward-line (or n 1))
-  (goto-char (line-beginning-position))
+  (beginning-of-line)
   (symbols-outline--display-symbol-in-origin)
   (symbols-outline--after-move))
 
@@ -241,7 +247,7 @@ Argument N means number of symbols to move."
              until (or (eq current-level
                            (get-text-property (line-beginning-position) 'depth))
                        (eq (line-number-at-pos) line0))
-             finally (goto-char (line-beginning-position)))
+             finally (beginning-of-line))
     (if (eq (line-number-at-pos) line0)
         (progn
           (message "No more symbols.")
@@ -262,7 +268,7 @@ Argument N means number of symbols to move."
              until (or (eq current-level
                            (get-text-property (line-beginning-position) 'depth))
                        (eq (line-number-at-pos) line0))
-             finally (goto-char (line-beginning-position)))
+             finally (beginning-of-line))
     (if (eq (line-number-at-pos) line0)
         (progn
           (message "No more symbols.")
@@ -282,7 +288,7 @@ Argument N means number of symbols to move."
                until (eq target-level
                          (get-text-property (line-beginning-position) 'depth))
                finally
-               (goto-char (line-beginning-position))
+               (beginning-of-line)
                (symbols-outline--display-symbol-in-origin))
     (message "No parent symbols."))
   (symbols-outline--after-move))
@@ -301,7 +307,7 @@ Argument N means number of symbols to move."
              until (or (eq target-level
                            (get-text-property (line-beginning-position) 'depth))
                        (eq (line-number-at-pos) line0))
-             finally (goto-char (line-beginning-position)))
+             finally (beginning-of-line))
     (if (eq (line-number-at-pos) line0)
         (progn
           (message "No children symbols.")
@@ -340,7 +346,7 @@ Argument N means number of symbols to move."
               (setf (symbols-outline-node-collapsed node) nil)
               (overlay-put ov 'before-string (symbols-outline--get-margin-spec-cache nil))
               ;; Insert children
-              (goto-char (line-end-position))
+              (end-of-line)
               (insert "\n")
               (dolist (child children)
                 (symbols-outline--insert-node child (1+ depth)))
@@ -348,10 +354,10 @@ Argument N means number of symbols to move."
           (setf (symbols-outline-node-collapsed node) t)
           (overlay-put ov 'before-string (symbols-outline--get-margin-spec-cache t))
           ;; Delete children
-          (goto-char (line-beginning-position))
+          (beginning-of-line)
           (let ((pos1 (line-beginning-position 2))
                 (pos2 (cl-loop do (forward-line)
-                               while (and (not (= (point) (point-max)))
+                               while (and (not (eobp))
                                           (> (or (get-text-property (point) 'depth) -1) depth))
                                finally return (point))))
             (mapc #'delete-overlay (overlays-in pos1 pos2))
@@ -405,7 +411,7 @@ Argument N means number of symbols to move."
   )
 
 (defun symbols-outline--insert-line (node depth)
-  "Make a line of SYMBOL at DEPTH."
+  "Insert a line of NODE at DEPTH."
   (let* ((name (symbols-outline-node-name node))
          (kind (symbols-outline-node-kind node))
          (face (symbols-outline--get-kind-face kind))
@@ -452,6 +458,7 @@ Argument N means number of symbols to move."
                     (setf (symbols-outline-node-collapsed node) t)))))
 
 (defun symbols-outline--insert-node (node depth)
+  "Insert NODE at DEPTH."
   (let ((children-depth depth))
     ;; Insert current node
     (when (symbols-outline-node-name node)
@@ -485,10 +492,11 @@ Argument N means number of symbols to move."
                  until (or (null pos)
                            (eq (get-text-property (line-beginning-position) 'line)
                                (symbols-outline-node-line at-node)))
-                 finally (goto-char (line-beginning-position)))
+                 finally (beginning-of-line))
         (symbols-outline--after-move)))))
 
 (defun symbols-outline--follow (&optional _)
+  "Follow the cursor in original buffer."
   (when-let (buffer-file-name
              ((not (eq last-command 'self-insert-command)))
              (win (get-buffer-window symbols-outline-buffer-name))
@@ -501,6 +509,7 @@ Argument N means number of symbols to move."
       (symbols-outline-refresh))))
 
 (defun symbols-outline--render ()
+  "Render the symbols outline buffer."
   (with-current-buffer symbols-outline-buffer-name
     (let* ((tree (with-current-buffer symbols-outline--origin
                    symbols-outline--entries-tree))
