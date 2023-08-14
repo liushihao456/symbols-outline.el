@@ -25,11 +25,7 @@
 
 ;;; Commentary:
 ;;
-;; --------------------------------------
-
-;;; Usage:
-;;
-;; --------------------------------------
+;; Ctags backend that retrieves the document symbols with ctags.
 
 ;;; Code:
 

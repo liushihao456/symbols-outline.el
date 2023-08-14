@@ -25,11 +25,7 @@
 
 ;;; Commentary:
 ;;
-;; --------------------------------------
-
-;;; Usage:
-;;
-;; --------------------------------------
+;; Tree data structure for document symbols.
 
 ;;; Code:
 

@@ -25,11 +25,8 @@
 
 ;;; Commentary:
 ;;
-;; --------------------------------------
-
-;;; Usage:
-;;
-;; --------------------------------------
+;; When enabled, the cursor in the original buffer will follow the movement in
+;; the outline buffer.
 
 ;;; Code:
 

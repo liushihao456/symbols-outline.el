@@ -25,11 +25,7 @@
 
 ;;; Commentary:
 ;;
-;; --------------------------------------
-
-;;; Usage:
-;;
-;; --------------------------------------
+;; Lsp backend that retrieves the document symbols through lsp-mode.
 
 ;;; Code:
 
