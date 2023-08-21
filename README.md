@@ -1,3 +1,4 @@
+[![MELPA](https://melpa.org/packages/symbols-outline-badge.svg)](https://melpa.org/#/symbols-outline)
 # Introduction
 
 This package displays all the symbols (including classes, functions, variables, etc., depending on what the backend outputs), in an outline view.
@@ -15,15 +16,13 @@ This package displays all the symbols (including classes, functions, variables, 
 
 # Requirements
 
-Symbols-outline.el relies on a backend to get the symbols. It works best if ctags is installed. Or if `lsp-mode` is active, you can use the lsp backend. See `symbols-outline-fetch-fn`.
+Symbols-outline.el relies on a backend to get the symbols. By default the ctags backend is used. Or if `lsp-mode` is active, you can use the lsp backend. See `symbols-outline-fetch-fn`.
+
+If using ctags backend, `ctags` must be installed on your machine.
 
 # Installation
 
-Clone this repository, and add it to your load-path:
-
-``` emacs-lisp
-(add-to-list 'load-path "/path/to/symbols-outline/")
-```
+This package is in Melpa so you can install it with your favorite package manager.
 
 # Example configuration
 
