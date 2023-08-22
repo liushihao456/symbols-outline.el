@@ -207,7 +207,7 @@ Icon is drawn with the foreground of FACE and scaled with SCALE."
         ;; Insert all parsed nodes, replacing colors with fg-color
         (symbols-outline-svg-icon--recursively-copy-children svg (car root) fg-color)
 
-        (apply #'symbols-outline-svg-icon-cache-add (svg-image svg :ascent 'center :scale 1)
+        (apply #'symbols-outline-svg-icon-cache-add (svg-image svg :ascent 80 :scale 1)
                icon-name args)))))
 
 (defun symbols-outline-svg-icon-str (icon-name &rest args)
