@@ -41,6 +41,7 @@ This package is in Melpa so you can install it with your favorite package manage
 | Key   | Command                                   | Description                                                                       |
 |:------|:------------------------------------------|:----------------------------------------------------------------------------------|
 | g     | symbols-outline-refresh                   | Refresh                                                                           |
+| q     | quit-window                               | Close the outline window                                                          |
 | n     | symbols-outline-next                      | Go to the next symbol                                                             |
 | p     | symbols-outline-prev                      | Go to the previous symbol                                                         |
 | f     | symbols-outline-next-same-level           | Go the the next symbol of the same level                                          |
