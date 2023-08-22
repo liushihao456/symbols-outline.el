@@ -91,9 +91,12 @@
     ("property"      . " ")
 
     ;; Markdown
-    ("chapter"       . " ")
-    ("section"       . "ﮝ ")
-    ("subsection"    . "ﮝ ")
+    ("chapter"       . "󰉫 ")
+    ("section"       . "󰉬 ")
+    ("subsection"    . "󰉭 ")
+    ("subsubsection"    . "󰉮 ")
+    ("l4subsection"    . "󰉯 ")
+    ("l5subsection"    . "󰉰 ")
 
     ;; Org
     ("part"          . " ")

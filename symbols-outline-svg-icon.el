@@ -107,24 +107,9 @@ If COLOR-NAME is unknown to Emacs, then return COLOR-NAME as-is."
                                  (symbols-outline-svg-icon--alist-to-keyword-plist attrs))))
             (symbols-outline-svg-icon--recursively-copy-children node1-child child fg-color)))))))
 
-(defvar symbols-outline-svg-icon-scale-alist
-  '(("tag" . 0.8)
-    ("key" . 0.8)
-    ("tools" . 0.85)
-    ("tex" . 1.2)
-    ("java" . 1.2)
-    ("database" . 0.9)
-    ("file-directory" . 1.05)
-    ("visualstudio" . 0.85)
-    ("wrench" . 0.85)
-    ("emacs" . 1.05)
-    ("file" . 1.1)
-    ("file-zip" . 1.05)
-    ("film" . 0.9)
-    ("symbol-parameter" . 1.15)
-    ("closed_caption" . 1.15)
-    ("variable-local" . 1.05)
-    ("repo" . 1.1)))
+(defvar symbols-outline-svg-icon-scale-alist '()
+  "Alist that specifies the extra scaling factors for icons on top of base scale.
+Each element is in the form (ICON-NAME . SCALE-FACTOR).")
 
 (defvar symbols-outline-svg-icon-base-scale 1.0)
 
