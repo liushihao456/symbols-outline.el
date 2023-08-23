@@ -71,7 +71,7 @@
 If lsp-mode is compiled with `lsp-use-plists', `plist-get' will be used;
 otherwise `gethash' will be used."
   (if lsp-use-plists
-      (plist-get source name)
+      (plist-get source (intern (concat ":" name)) #'equal)
     (gethash name source)))
 
 (defun symbols-outline-lsp--convert-internal (ht-symbols tree)
