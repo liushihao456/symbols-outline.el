@@ -62,21 +62,33 @@
 	(26 "typeparameter")
     (_ "misc")))
 
+;; For the compiler
+(defvar lsp-use-plists)
+
+(defun symbols-outline-lsp--get-item (name source)
+  "Get the item NAME from SOURCE.
+
+If lsp-mode is compiled with `lsp-use-plists', `plist-get' will be used;
+otherwise `gethash' will be used."
+  (if lsp-use-plists
+      (plist-get source name)
+    (gethash name source)))
+
 (defun symbols-outline-lsp--convert-internal (ht-symbols tree)
   "Convert hashtable HT-SYMBOLS to the tree TREE."
   (mapc (lambda (symbol)
           (let ((node (make-symbols-outline-node
-                       :name (gethash "name" symbol)
+                       :name (symbols-outline-lsp--get-item "name" symbol)
                        :kind (symbols-outline-lsp--kind-name
-                              (gethash "kind" symbol))
+                              (symbols-outline-lsp--get-item "kind" symbol))
                        :line (thread-last symbol
-                                          (gethash "range")
-                                          (gethash "start")
-                                          (gethash "line")
+                                          (symbols-outline-lsp--get-item "range")
+                                          (symbols-outline-lsp--get-item "start")
+                                          (symbols-outline-lsp--get-item "line")
                                           (1+))
-                       :signature (gethash "detail" symbol)
+                       :signature (symbols-outline-lsp--get-item "detail" symbol)
                        :parent tree))
-                (ht-children (gethash "children" symbol)))
+                (ht-children (symbols-outline-lsp--get-item "children" symbol)))
             (push node (symbols-outline-node-children tree))
             (when (length> ht-children 0)
               (symbols-outline-lsp--convert-internal ht-children node))))
