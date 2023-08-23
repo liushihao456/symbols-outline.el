@@ -30,7 +30,8 @@
 ;;; Code:
 
 (defvar symbols-outline-nerd-icon-alist
-  '(
+  '(("tag"           . " ")
+
     ;; C, C++, java, python
     ("file"          . " ")
     ("function"      . " ")
@@ -94,23 +95,25 @@
     ("chapter"       . "󰉫 ")
     ("section"       . "󰉬 ")
     ("subsection"    . "󰉭 ")
-    ("subsubsection"    . "󰉮 ")
-    ("l4subsection"    . "󰉯 ")
-    ("l5subsection"    . "󰉰 ")
+    ("subsubsection" . "󰉮 ")
+    ("l4subsection"  . "󰉯 ")
+    ("l5subsection"  . "󰉰 ")
 
     ;; Org
     ("part"          . " ")
 
     ;; Chevrons
     ("chevron-down"  . " ")
-    ("chevron-right" . " ")))
+    ("chevron-right" . " ")
+    ))
 
 (defun symbols-outline-nerd-icon-str (icon-name &rest args)
   "Return the nerd font icon for ICON-NAME.
 
 ARGS are additional plist arguments where properties FACE and
 SCALE are supported."
-  (propertize (or (cdr (assoc icon-name symbols-outline-nerd-icon-alist)) "")
+  (propertize (or (cdr (assoc icon-name symbols-outline-nerd-icon-alist))
+                  (cdr (assoc "tag" symbols-outline-nerd-icon-alist)))
               'face `(:foreground
                       ,(face-attribute
                         (or (plist-get args :face) 'default)
