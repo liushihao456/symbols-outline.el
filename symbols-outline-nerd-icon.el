@@ -30,7 +30,7 @@
 ;;; Code:
 
 (defvar symbols-outline-nerd-icon-alist
-  '(("tag"           . " ")
+  '(("tag"           . " ")
 
     ;; C, C++, java, python
     ("file"          . " ")
