@@ -8,7 +8,7 @@ This package displays all the symbols (including classes, functions, variables, 
 1. List the symbols in a well-organized window.
 2. The outline window position follows your cursor in the original buffer.
 3. It's easy to navigate between symbols via moving in the outline window.
-4. Allows various and custom backends. Currently ctags and lsp-mode backends are provided.
+4. Allows various and custom backends. Currently ctags and lsp-mode/eglot backends are provided.
 
 # Demo
 
@@ -16,7 +16,7 @@ This package displays all the symbols (including classes, functions, variables, 
 
 # Requirements
 
-Symbols-outline.el relies on a backend to get the symbols. By default the ctags backend is used. Or if `lsp-mode` is active, you can use the lsp backend. See `symbols-outline-fetch-fn`.
+Symbols-outline.el relies on a backend to get the symbols. By default the ctags backend is used. Or if `lsp-mode` or `eglot` is active, you can use the lsp backend. See `symbols-outline-fetch-fn`.
 
 If using ctags backend, `ctags` must be installed on your machine.
 
@@ -31,6 +31,7 @@ This package is in Melpa so you can install it with your favorite package manage
 (with-eval-after-load 'symbols-outline
   ;; By default the ctags backend is selected
   (unless (executable-find "ctags")
+    ;; Use lsp-mode or eglot as backend
     (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
   (setq symbols-outline-window-position 'left)
   (symbols-outline-follow-mode))
