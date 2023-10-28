@@ -61,3 +61,4 @@ This package is in Melpa so you can install it with your favorite package manage
 - `symbols-outline-no-other-window`: if `t`, the outline side window will not be selected with the `other-window` command. Instead, you can switch to the outline window with `symbols-outline-show`. Default `t`.
 - `symbols-outline-no-delete-other-window`: if `t`, the outline side window will not be deleted by the `delete-other-windows` command. Default `t`.
 - `symbols-outline-collapse-functions-on-startup`: whether to collapse function nodes on startup to hide the parameter nodes.
+- `symbols-outline-use-nerd-icon-in-gui`: whether to use nerd icons instead of SVGs in GUI Emacs.

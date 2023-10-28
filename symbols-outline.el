@@ -81,6 +81,11 @@ Its length has to be 1."
   :type 'number
   :group 'symbols-outline)
 
+(defcustom symbols-outline-use-nerd-icon-in-gui nil
+  "Whether use nerd font icons in GUI mode."
+  :type 'boolean
+  :group 'symbols-outline)
+
 (defcustom symbols-outline-use-nerd-icon-in-tui t
   "Whether use nerd font icons in TUI mode."
   :type 'boolean
@@ -102,7 +107,9 @@ It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec."
   "Get icon for KIND."
   (let ((face (symbols-outline--get-kind-face kind)))
     (if (display-graphic-p)
-        (symbols-outline-svg-icon-str kind :face face)
+        (if symbols-outline-use-nerd-icon-in-gui
+            (symbols-outline-nerd-icon-str kind :face face)
+          (symbols-outline-svg-icon-str kind :face face))
       (when symbols-outline-use-nerd-icon-in-tui
         (symbols-outline-nerd-icon-str kind :face face)))))
 
@@ -111,7 +118,9 @@ It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec."
   (let* ((icon (if collapsed "chevron-right" "chevron-down"))
          (face (symbols-outline--get-kind-face icon)))
     (if (display-graphic-p)
-        (symbols-outline-svg-icon icon :face face)
+        (if symbols-outline-use-nerd-icon-in-gui
+            (symbols-outline-nerd-icon-str icon :face face)
+          (symbols-outline-svg-icon icon :face face))
       (if symbols-outline-use-nerd-icon-in-tui
           (symbols-outline-nerd-icon-str icon :face face)
         (if collapsed "+" "-")))))
