@@ -69,6 +69,11 @@
   :type 'boolean
   :group 'symbols-outline)
 
+(defcustom symbols-outline-ignore-variable-symbols t
+  "Whether to ignore variable symbols."
+  :type 'boolean
+  :group 'symbols-outline)
+
 (defcustom symbols-outline-current-symbol-indicator "›"
   "Indicator string that marks the current symbol at point in the outline window.
 
@@ -454,6 +459,13 @@ Argument N means number of symbols to move."
   :type '(repeat string)
   :group 'symbols-outline)
 
+(defcustom symbols-outline-variable-node-kinds
+  '("variable" "externvar" "local" "member" "field" "parameter" "macroparam"
+    "typeparameter" "tparam" "constant" "property")
+  "Tag kinds that denote a variable node."
+  :type '(repeat string)
+  :group 'symbols-outline)
+
 (defun symbols-outline--collapse-function-nodes (tree)
   "Set the `collapsed' property to t for function nodes of TREE."
   (symbols-outline-node-foreach
@@ -462,6 +474,16 @@ Argument N means number of symbols to move."
                              (member (symbols-outline-node-kind node)
                                      symbols-outline-function-node-kinds))
                     (setf (symbols-outline-node-collapsed node) t)))))
+
+(defun symbols-outline--prune-variable-nodes (tree)
+  "Prune variable nodes from TREE."
+  (symbols-outline-node-foreach
+   tree (lambda (node)
+          (when (member (symbols-outline-node-kind node)
+                        symbols-outline-variable-node-kinds)
+            (setf (symbols-outline-node-children (symbols-outline-node-parent node))
+                  (delq node
+                        (symbols-outline-node-children (symbols-outline-node-parent node))))))))
 
 (defun symbols-outline--insert-node (node depth)
   "Insert NODE at DEPTH."
@@ -531,20 +553,22 @@ Argument N means number of symbols to move."
 
 (defun symbols-outline--refresh-tree (tree)
   "Refresh symbols outline buffer content given TREE."
-    (with-current-buffer symbols-outline--origin
-      (if symbols-outline--entries-tree
-          ;; There exists previous tree -> reuse its collapse states
-          (symbols-outline-node--copy-collapse-state
-           symbols-outline--entries-tree tree)
-        ;; Else -> maybe collapse function nodes
-        (when symbols-outline-collapse-functions-on-startup
-          (symbols-outline--collapse-function-nodes tree)))
-      (setq symbols-outline--entries-tree tree))
-    ;; Render the symbols
-    (with-current-buffer symbols-outline-buffer-name
-      (let* ((inhibit-read-only t))
-        (symbols-outline--render)
-        (setq symbols-outline--refreshing nil))))
+  (if symbols-outline-ignore-variable-symbols
+      (symbols-outline--prune-variable-nodes tree))
+  (with-current-buffer symbols-outline--origin
+    (if symbols-outline--entries-tree
+        ;; There exists previous tree -> reuse its collapse states
+        (symbols-outline-node--copy-collapse-state
+         symbols-outline--entries-tree tree)
+      ;; Else -> maybe collapse function nodes
+      (when symbols-outline-collapse-functions-on-startup
+        (symbols-outline--collapse-function-nodes tree)))
+    (setq symbols-outline--entries-tree tree))
+  ;; Render the symbols
+  (with-current-buffer symbols-outline-buffer-name
+    (let* ((inhibit-read-only t))
+      (symbols-outline--render)
+      (setq symbols-outline--refreshing nil))))
 
 (defvar symbols-outline-fetch-fn #'symbols-outline-ctags-fetch
   "Function to fetch symbols.
