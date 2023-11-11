@@ -545,11 +545,13 @@ Argument N means number of symbols to move."
            (inhibit-read-only t))
       (delete-all-overlays)
       (erase-buffer)
-      (symbols-outline--insert-node tree 0)
-      (delete-char -1)
-      (goto-char (point-min))
-      (symbols-outline--after-move)
-      (symbols-outline--follow-symbol))))
+      ;; when the tree is not empty
+      (when (symbols-outline-node-children tree)
+        (symbols-outline--insert-node tree 0)
+        (delete-char -1)
+        (goto-char (point-min))
+        (symbols-outline--after-move)
+        (symbols-outline--follow-symbol)))))
 
 (defun symbols-outline--refresh-tree (tree)
   "Refresh symbols outline buffer content given TREE."
