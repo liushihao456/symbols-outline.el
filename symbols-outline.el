@@ -334,6 +334,25 @@ Argument N means number of symbols to move."
     (goto-char (point-min))
     (forward-line (1- line))))
 
+(defun symbols-outline-click ()
+  "Visit symbol clicked."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (cl-loop do
+             (symbols-outline--before-move)
+             (forward-line 1)
+             until (eobp)))
+  (symbols-outline--after-move)
+  (if (and (featurep 'evil) (eq evil-state 'visual))
+      (evil-exit-visual-state))
+  (goto-char (line-beginning-position))
+  (let ((line (get-text-property (line-beginning-position) 'line)))
+    (pop-to-buffer symbols-outline--origin)
+    (goto-char (point-min))
+    (forward-line (1- line))
+    (recenter)))
+
 (defun symbols-outline-visit-and-quit ()
   "Visit symbol under cursor and quit the symbols-outline window."
   (interactive)
@@ -407,6 +426,7 @@ Argument N means number of symbols to move."
     (define-key map (kbd "S-TAB") 'symbols-outline-cycle-visibility-globally)
     (define-key map [backtab] 'symbols-outline-cycle-visibility-globally)
     (define-key map (kbd "RET") 'symbols-outline-visit)
+    (define-key map [mouse-1] 'symbols-outline-click)
     (define-key map (kbd "M-RET") 'symbols-outline-visit-and-quit)
     map)
   "Keymap for `symbols-outline-mode'.")
@@ -451,6 +471,7 @@ Argument N means number of symbols to move."
                         'depth depth
                         'face face
                         'node node
+                        'mouse-face 'highlight
                         'line-prefix lp))))
 
 (defcustom symbols-outline-function-node-kinds
