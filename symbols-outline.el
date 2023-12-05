@@ -481,7 +481,7 @@ Argument N means number of symbols to move."
   :group 'symbols-outline)
 
 (defcustom symbols-outline-variable-node-kinds
-  '("variable" "externvar" "local" "member" "field" "parameter" "macroparam"
+  '("variable" "externvar" "local" "field" "parameter" "macroparam"
     "typeparameter" "tparam" "constant" "property")
   "Tag kinds that denote a variable node."
   :type '(repeat string)
