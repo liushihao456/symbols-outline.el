@@ -80,11 +80,17 @@
                        :name (symbols-outline-lsp--get-item "name" symbol)
                        :kind (symbols-outline-lsp--kind-name
                               (symbols-outline-lsp--get-item "kind" symbol))
-                       :line (thread-last symbol
-                                          (symbols-outline-lsp--get-item "range")
-                                          (symbols-outline-lsp--get-item "start")
-                                          (symbols-outline-lsp--get-item "line")
-                                          (1+))
+                       :line (if-let ((location (symbols-outline-lsp--get-item "location" symbol)))
+                                 (thread-last location
+                                              (symbols-outline-lsp--get-item "range")
+                                              (symbols-outline-lsp--get-item "start")
+                                              (symbols-outline-lsp--get-item "line")
+                                              (1+))
+                               (thread-last symbol
+                                            (symbols-outline-lsp--get-item "range")
+                                            (symbols-outline-lsp--get-item "start")
+                                            (symbols-outline-lsp--get-item "line")
+                                            (1+)))
                        :signature (symbols-outline-lsp--get-item "detail" symbol)
                        :parent tree))
                 (ht-children (symbols-outline-lsp--get-item "children" symbol)))
