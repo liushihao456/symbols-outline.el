@@ -607,8 +607,9 @@ its children.")
   "Refresh symbols outline buffer."
   (interactive)
   ;; Only refresh when the origin buffer has file name or in the outline buffer
-  (when (or (buffer-file-name symbols-outline--origin)
-            (equal buffer-file-name symbols-outline-buffer-name))
+  (when (and (get-buffer symbols-outline-buffer-name)
+             (or (buffer-file-name symbols-outline--origin)
+                 (equal buffer-file-name symbols-outline-buffer-name)))
     (with-current-buffer symbols-outline-buffer-name
       (setq-local default-directory
                   (buffer-local-value 'default-directory symbols-outline--origin)))
