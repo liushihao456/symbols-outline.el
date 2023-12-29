@@ -82,10 +82,11 @@
             (setq parent (split-string parent separator))))
         ;; Current node
         (if (and (setq node
-                       (seq-find (lambda (n) (and (equal name (symbols-outline-node-name n))
-                                                  (or (not (symbols-outline-node-kind n))
-                                                      (equal kind (symbols-outline-node-kind n)))))
-                                 (symbols-outline-node-children root)))
+                       (symbols-outline-node-find
+                        root
+                        (lambda (n) (and (equal name (symbols-outline-node-name n))
+                                         (or (not (symbols-outline-node-kind n))
+                                             (equal kind (symbols-outline-node-kind n)))))))
                  (not (symbols-outline-node-line node)))
             ;; If it exists as a pseudo node (has only name and kind
             ;; properties), meaning it has been added as a pseudo parent node by
