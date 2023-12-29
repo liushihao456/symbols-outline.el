@@ -83,7 +83,8 @@
         ;; Current node
         (if (and (setq node
                        (seq-find (lambda (n) (and (equal name (symbols-outline-node-name n))
-                                                  (equal kind (symbols-outline-node-kind n))))
+                                                  (or (not (symbols-outline-node-kind n))
+                                                      (equal kind (symbols-outline-node-kind n)))))
                                  (symbols-outline-node-children root)))
                  (not (symbols-outline-node-line node)))
             ;; If it exists as a pseudo node (has only name and kind
@@ -116,8 +117,10 @@
                                         (lambda (n) (and
                                                      (equal p (symbols-outline-node-name n))
                                                      (if lastp
-                                                         (equal parent-kind
-                                                                (symbols-outline-node-kind n))
+                                                         (or
+                                                          (not (symbols-outline-node-kind n))
+                                                          (equal parent-kind
+                                                                 (symbols-outline-node-kind n)))
                                                        t)))))
                            (setq parent-node (if lastp
                                                  (make-symbols-outline-node :name p
@@ -131,7 +134,10 @@
           (setq parent-node root))
         (setf (symbols-outline-node-parent node) parent-node)
         ;; Add to parent's children list
-        (push node (symbols-outline-node-children parent-node))))
+        (unless (seq-find (lambda (n) (and (equal name (symbols-outline-node-name n))
+                                           (equal kind (symbols-outline-node-kind n))))
+                          (symbols-outline-node-children parent-node))
+          (push node (symbols-outline-node-children parent-node)))))
     (symbols-outline-node--sort-children root)
     root))
 
