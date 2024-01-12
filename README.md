@@ -43,12 +43,12 @@ This package is in Melpa so you can install it with your favorite package manage
 |:------|:------------------------------------------|:----------------------------------------------------------------------------------|
 | g     | symbols-outline-refresh                   | Refresh                                                                           |
 | q     | quit-window                               | Close the outline window                                                          |
-| n     | symbols-outline-next                      | Go to the next symbol                                                             |
-| p     | symbols-outline-prev                      | Go to the previous symbol                                                         |
-| f     | symbols-outline-next-same-level           | Go the the next symbol of the same level                                          |
-| b     | symbols-outline-prev-same-level           | Go the the previous symbol of the same level                                      |
-| u     | symbols-outline-move-depth-up             | Go the the parent symbol                                                          |
-| d     | symbols-outline-move-depth-down           | Go the the child symbol                                                           |
+| n     | symbols-outline-next                      | Move to the next symbol                                                           |
+| p     | symbols-outline-prev                      | Move to the previous symbol                                                       |
+| f     | symbols-outline-next-same-level           | Move to the the next symbol of the same level                                     |
+| b     | symbols-outline-prev-same-level           | Move to the the previous symbol of the same level                                 |
+| u     | symbols-outline-move-depth-up             | Move to the the parent symbol                                                     |
+| d     | symbols-outline-move-depth-down           | Move to the the child symbol                                                      |
 | TAB   | symbols-outline-toggle-node               | Fold/unfold the children symbols                                                  |
 | S-TAB | symbols-outline-cycle-visibility-globally | Fold/unfold globally                                                              |
 | RET   | symbols-outline-visit                     | Go to the symbol under cursor in the original buffer                              |
