@@ -487,6 +487,13 @@ Argument N means number of symbols to move."
   :type '(repeat string)
   :group 'symbols-outline)
 
+(defcustom symbols-outline-initial-folded-node-kinds '()
+  "Kinds of nodes that will be folded on startup.
+
+Check out `symbols-outline--kind-face-alist' for available node kinds."
+  :type '(repeat string)
+  :group 'symbols-outline)
+
 (defun symbols-outline--collapse-function-nodes (tree)
   "Set the `collapsed' property to t for function nodes of TREE."
   (symbols-outline-node-foreach
@@ -494,6 +501,16 @@ Argument N means number of symbols to move."
    (lambda (node) (when (and (symbols-outline-node-children node)
                              (member (symbols-outline-node-kind node)
                                      symbols-outline-function-node-kinds))
+                    (setf (symbols-outline-node-collapsed node) t)))))
+
+(defun symbols-outline--collapse-initial-folded-nodes (tree)
+  "Set the `collapsed' property to t for nodes of
+`symbols-outline-initial-folded-node-kinds'."
+  (symbols-outline-node-foreach
+   tree
+   (lambda (node) (when (and (symbols-outline-node-children node)
+                             (member (symbols-outline-node-kind node)
+                                     symbols-outline-initial-folded-node-kinds))
                     (setf (symbols-outline-node-collapsed node) t)))))
 
 (defun symbols-outline--prune-variable-nodes (tree)
@@ -585,7 +602,8 @@ Argument N means number of symbols to move."
          symbols-outline--entries-tree tree)
       ;; Else -> maybe collapse function nodes
       (when symbols-outline-collapse-functions-on-startup
-        (symbols-outline--collapse-function-nodes tree)))
+        (symbols-outline--collapse-function-nodes tree))
+      (symbols-outline--collapse-initial-folded-nodes tree))
     (setq symbols-outline--entries-tree tree))
   ;; Render the symbols
   (with-current-buffer symbols-outline-buffer-name
