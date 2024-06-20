@@ -167,20 +167,21 @@ its children to its parent, and delete this node."
     (symbols-outline-node-foreach
      from
      (lambda (node)
-       (when-let ((name (symbols-outline-node-name node))
-                  (kind (symbols-outline-node-kind node))
-                  (signature (symbols-outline-node-signature node))
-                  (collapsed (symbols-outline-node-collapsed node)))
-         (puthash (concat name kind signature) collapsed collapsed-table))))
+       (let ((name (symbols-outline-node-name node))
+             (kind (symbols-outline-node-kind node))
+             (signature (symbols-outline-node-signature node)))
+         (when-let (((symbols-outline-node-children node))
+                    (collapsed (symbols-outline-node-collapsed node)))
+           (puthash (concat name kind signature) collapsed collapsed-table)))))
     (symbols-outline-node-foreach
      to
      (lambda (node)
-       (when-let* ((name (symbols-outline-node-name node))
-                   (kind (symbols-outline-node-kind node))
-                   (signature (symbols-outline-node-signature node))
-                   ((symbols-outline-node-children node))
-                   (orig-collapsed (gethash (concat name kind signature) collapsed-table)))
-         (setf (symbols-outline-node-collapsed node) t))))))
+       (let ((name (symbols-outline-node-name node))
+             (kind (symbols-outline-node-kind node))
+             (signature (symbols-outline-node-signature node)))
+         (when (and (symbols-outline-node-children node)
+                    (gethash (concat name kind signature) collapsed-table))
+           (setf (symbols-outline-node-collapsed node) t)))))))
 
 (provide 'symbols-outline-node)
 
