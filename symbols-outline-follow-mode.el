@@ -38,6 +38,23 @@
   "The idle timer object for `symbols-outline-follow-mode'.
 Active while follow mode is enabled and nil/cancelled otherwise.")
 
+(defvar-local symbols-outline--last-pos nil)
+
+(defun symbols-outline--follow (&optional _)
+  "Follow the cursor in original buffer."
+  (when-let (buffer-file-name
+             ((not (eq last-command 'self-insert-command)))
+             ((not (equal (point) symbols-outline--last-pos)))
+             (win (get-buffer-window symbols-outline-buffer-name))
+             (selected-buf (window-buffer (selected-window))))
+    (if (eq symbols-outline--origin selected-buf)
+        ;; Same buffer -> just follow symbol under point
+          (symbols-outline--follow-symbol)
+      ;; Changed buffer -> refresh symbols-outline buffer
+      (setq symbols-outline--origin selected-buf)
+      (symbols-outline-refresh)))
+  (setq symbols-outline--last-pos (point)))
+
 (defun symbols-outline-follow-mode--setup ()
   "Setup symbols outline follow mode."
   (setq symbols-outline-follow-mode--timer

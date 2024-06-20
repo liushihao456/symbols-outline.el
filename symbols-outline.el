@@ -561,19 +561,6 @@ Check out `symbols-outline--kind-face-alist' for available node kinds."
                  finally (beginning-of-line))
         (symbols-outline--after-move)))))
 
-(defun symbols-outline--follow (&optional _)
-  "Follow the cursor in original buffer."
-  (when-let (buffer-file-name
-             ((not (eq last-command 'self-insert-command)))
-             (win (get-buffer-window symbols-outline-buffer-name))
-             (selected-buf (window-buffer (selected-window))))
-    (if (eq symbols-outline--origin selected-buf)
-        ;; Same buffer -> just follow symbol under point
-        (symbols-outline--follow-symbol)
-      ;; Changed buffer -> refresh symbols-outline buffer
-      (setq symbols-outline--origin selected-buf)
-      (symbols-outline-refresh))))
-
 (defun symbols-outline--render ()
   "Render the symbols outline buffer."
   (with-current-buffer symbols-outline-buffer-name
