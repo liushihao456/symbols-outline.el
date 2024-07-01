@@ -102,6 +102,9 @@ Its length has to be 1."
 (defvar symbols-outline--origin nil
   "Original source buffer whose symbols outline is being shown.")
 
+(defvar symbols-outline--origin-window nil
+  "Original window whose symbols outline is being shown.")
+
 (defvar symbols-outline--margin-spec-cache (cons nil nil)
   "Cache the expanded/collapsed indicators on the margin.
 It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec.")
@@ -215,7 +218,7 @@ It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec."
 (defun symbols-outline--display-symbol-in-origin ()
   "Locate the symbol at point in the original buffer."
   (when-let (line (get-text-property (line-beginning-position) 'line))
-    (with-selected-window (get-buffer-window symbols-outline--origin)
+    (with-selected-window symbols-outline--origin-window
       (goto-char (point-min))
       (forward-line (1- line))
       (recenter))))
@@ -330,7 +333,7 @@ Argument N means number of symbols to move."
   "Visit symbol under cursor."
   (interactive)
   (let ((line (get-text-property (line-beginning-position) 'line)))
-    (pop-to-buffer symbols-outline--origin)
+    (select-window symbols-outline--origin-window)
     (goto-char (point-min))
     (forward-line (1- line))))
 
@@ -348,7 +351,7 @@ Argument N means number of symbols to move."
       (evil-exit-visual-state))
   (goto-char (line-beginning-position))
   (let ((line (get-text-property (line-beginning-position) 'line)))
-    (pop-to-buffer symbols-outline--origin)
+    (select-window symbols-outline--origin-window)
     (goto-char (point-min))
     (forward-line (1- line))
     (recenter)))
@@ -358,7 +361,7 @@ Argument N means number of symbols to move."
   (interactive)
   (let ((line (get-text-property (line-beginning-position) 'line)))
     (quit-window)
-    (pop-to-buffer symbols-outline--origin)
+    (select-window symbols-outline--origin-window)
     (goto-char (point-min))
     (forward-line (1- line))))
 
@@ -626,6 +629,7 @@ its children.")
   "Show symbols outline in side window."
   (interactive)
   (setq symbols-outline--origin (current-buffer))
+  (setq symbols-outline--origin-window (selected-window))
   (let ((buf (get-buffer-create symbols-outline-buffer-name)))
     (with-current-buffer buf
       (unless (eq major-mode 'symbols-outline-mode)

@@ -52,6 +52,7 @@ Active while follow mode is enabled and nil/cancelled otherwise.")
           (symbols-outline--follow-symbol)
       ;; Changed buffer -> refresh symbols-outline buffer
       (setq symbols-outline--origin selected-buf)
+      (setq symbols-outline--origin-window (selected-window))
       (symbols-outline-refresh)))
   (setq symbols-outline--last-pos (point)))
 
