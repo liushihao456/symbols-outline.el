@@ -144,11 +144,12 @@
 (defun symbols-outline-lsp-fetch (refresh-fn)
   "Retrieve symbols via lsp-mode or eglot.
 Argument REFRESH-FN should be called upon the retrieved symbols tree."
-  (cond
-   ((bound-and-true-p eglot--managed-mode)
-    (symbols-outline-lsp--fetch-eglot refresh-fn))
-   ((bound-and-true-p lsp-managed-mode)
-    (symbols-outline-lsp--fetch-lsp-mode refresh-fn))))
+  (with-current-buffer symbols-outline--origin
+    (cond
+     ((bound-and-true-p eglot--managed-mode)
+      (symbols-outline-lsp--fetch-eglot refresh-fn))
+     ((bound-and-true-p lsp-managed-mode)
+      (symbols-outline-lsp--fetch-lsp-mode refresh-fn)))))
 
 (provide 'symbols-outline-lsp)
 
