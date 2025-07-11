@@ -221,7 +221,7 @@ It's a cons cell whose car/cdr is the expanded/collapsed indicator margin spec."
     (with-selected-window symbols-outline--origin-window
       (goto-char (point-min))
       (forward-line (1- line))
-      (recenter))))
+      (recenter 4))))
 
 (defun symbols-outline--before-move ()
   "Delete the indicator for current symbol before movement."
