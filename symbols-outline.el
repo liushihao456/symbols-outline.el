@@ -43,7 +43,7 @@
   :prefix "Outline")
 
 (defcustom symbols-outline-window-position 'right
-  "Position of symbols outline side window."
+  "Position of symbols outline side window; should be either 'left, 'right, 'top or 'bottom."
   :type '(choice
           (const right)
           (const left))
