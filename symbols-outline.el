@@ -444,6 +444,17 @@ Argument N means number of symbols to move."
   ;; (set-window-buffer (selected-window) (current-buffer))
   )
 
+(defun symbols-outline--format-node-name (name)
+  "Format the node NAME for display.
+
+Currently special formatting is applied only when there are `::', e.g.,
+`DemoClass::func1' will be formatted as `D:func1'."
+  (let ((subs (split-string name "::")))
+    (if (= (length subs) 1)
+        name
+      (concat (string-join (mapcar (lambda (s) (substring s 0 1)) (cl-subseq subs 0 -1)) "::")
+              "::" (car (last subs))))))
+
 (defun symbols-outline--insert-line (node depth)
   "Insert a line of NODE at DEPTH."
   (let* ((name (symbols-outline-node-name node))
@@ -469,7 +480,7 @@ Argument N means number of symbols to move."
                    (symbols-outline--get-margin-spec-cache
                     (symbols-outline-node-collapsed node))))
 
-    (insert (propertize name
+    (insert (propertize (symbols-outline--format-node-name name)
                         'line line
                         'depth depth
                         'face face
