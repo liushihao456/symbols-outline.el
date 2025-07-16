@@ -43,7 +43,7 @@
   :prefix "Outline")
 
 (defcustom symbols-outline-window-position 'right
-  "Position of symbols outline side window."
+  "Position of symbols outline side window; should be either 'left, 'right, 'top or 'bottom."
   :type '(choice
           (const right)
           (const left))
@@ -649,8 +649,7 @@ its children.")
         (select-window window)
       (symbols-outline-refresh)
       (let ((win (display-buffer-in-side-window
-                  buf `((side . ,(if (eq symbols-outline-window-position 'left)
-                                     'left 'right))
+                  buf `((side . ,symbols-outline-window-position)
                         (slot . 1)
                         (window-width . ,symbols-outline-window-width)))))
         (select-window win)
