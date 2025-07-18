@@ -34,6 +34,7 @@
 (require 'cl-lib)
 (require 'symbols-outline-node)
 (require 'symbols-outline-ctags)
+(require 'symbols-outline-lsp)
 (require 'symbols-outline-nerd-icon)
 (require 'symbols-outline-svg-icon)
 
