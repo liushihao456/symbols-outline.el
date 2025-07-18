@@ -18,7 +18,7 @@ This package displays all the symbols (including classes, functions, variables, 
 
 Symbols-outline.el relies on a backend to get the symbols. By default the ctags backend is used. Or if `lsp-mode` or `eglot` is active, you can use the lsp backend. See `symbols-outline-fetch-fn`.
 
-If using ctags backend, `ctags` must be installed on your machine.
+If using ctags backend, `universal-ctags` must be installed on your machine.
 
 # Installation
 
@@ -27,12 +27,14 @@ This package is in Melpa so you can install it with your favorite package manage
 # Example configuration
 
 ``` emacs-lisp
-(global-set-key (kbd "C-c i") 'symbols-outline-show)
-(with-eval-after-load 'symbols-outline
-  ;; By default the ctags backend is selected
-  (unless (executable-find "ctags")
-    ;; Use lsp-mode or eglot as backend
-    (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
+(use-package symbols-outline
+  :ensure t
+  :bind ("C-c i" . symbols-outline-show)
+  :init
+  (add-hook 'lsp-mode-hook ; Or `eglot-mode-hook' 
+            (lambda ()
+              (setq-local symbols-outline-fetch-fn #'symbols-outline-lsp-fetch)))
+  :config
   (setq symbols-outline-window-position 'left)
   (symbols-outline-follow-mode))
 ```
@@ -64,3 +66,4 @@ This package is in Melpa so you can install it with your favorite package manage
 - `symbols-outline-ignore-variable-symbols`: whether to ignore variable nodes. Default `t`.
 - `symbols-outline-collapse-functions-on-startup`: whether to collapse function nodes on startup to hide the parameter nodes.
 - `symbols-outline-initial-folded-node-kinds`: kinds of nodes that will be folded on startup. Check out the variable `symbols-outline--kind-face-alist` for available node kinds.
+- `symbols-outline-format-symbol-name-p`: whether to format symbol names in the outline window. Default `t`.

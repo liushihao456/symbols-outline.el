@@ -87,12 +87,18 @@ Its length has to be 1."
   :group 'symbols-outline)
 
 (defcustom symbols-outline-use-nerd-icon-in-gui nil
-  "Whether use nerd font icons in GUI mode."
+  "Whether to use nerd font icons in GUI mode."
   :type 'boolean
   :group 'symbols-outline)
 
 (defcustom symbols-outline-use-nerd-icon-in-tui t
-  "Whether use nerd font icons in TUI mode."
+  "Whether to use nerd font icons in TUI mode."
+  :type 'boolean
+  :group 'symbols-outline)
+
+(defcustom symbols-outline-format-symbol-name-p t
+  "Whether to format symbol names in the outline window.
+Check out `symbols-outline--format-symbol-name' for more details."
   :type 'boolean
   :group 'symbols-outline)
 
@@ -444,16 +450,20 @@ Argument N means number of symbols to move."
   ;; (set-window-buffer (selected-window) (current-buffer))
   )
 
-(defun symbols-outline--format-node-name (name)
-  "Format the node NAME for display.
+(defun symbols-outline--format-symbol-name (name)
+  "Format the symbol NAME for display.
 
 Currently special formatting is applied only when there are `::', e.g.,
 `DemoClass::func1' will be formatted as `D:func1'."
-  (let ((subs (split-string name "::")))
-    (if (= (length subs) 1)
-        name
-      (concat (string-join (mapcar (lambda (s) (substring s 0 1)) (cl-subseq subs 0 -1)) "::")
-              "::" (car (last subs))))))
+  (if symbols-outline-format-symbol-name-p
+      (let ((subs (split-string name "::")))
+        (if (= (length subs) 1)
+            name
+          (concat (string-join
+                   (mapcar (lambda (s) (substring s 0 1)) (cl-subseq subs 0 -1))
+                   "::")
+                  "::" (car (last subs)))))
+    name))
 
 (defun symbols-outline--insert-line (node depth)
   "Insert a line of NODE at DEPTH."
@@ -480,7 +490,7 @@ Currently special formatting is applied only when there are `::', e.g.,
                    (symbols-outline--get-margin-spec-cache
                     (symbols-outline-node-collapsed node))))
 
-    (insert (propertize (symbols-outline--format-node-name name)
+    (insert (propertize (symbols-outline--format-symbol-name name)
                         'line line
                         'depth depth
                         'face face
@@ -564,11 +574,13 @@ Check out `symbols-outline--kind-face-alist' for available node kinds."
                                (get-text-property (line-beginning-position) 'line)))))
                 (win (get-buffer-window symbols-outline-buffer-name))
                 (at-node (symbols-outline-node-find-symbol-at-line
-                          symbols-outline--entries-tree ln)))
+                          symbols-outline--entries-tree ln))
+                (formatted-name (symbols-outline--format-symbol-name
+                                 (symbols-outline-node-name at-node))))
       (with-selected-window win
         (symbols-outline--before-move)
         (goto-char (point-min))
-        (cl-loop for pos = (search-forward (symbols-outline-node-name at-node) nil t)
+        (cl-loop for pos = (search-forward formatted-name nil t)
                  until (or (null pos)
                            (eq (get-text-property (line-beginning-position) 'line)
                                (symbols-outline-node-line at-node)))
