@@ -66,4 +66,4 @@ This package is in Melpa so you can install it with your favorite package manage
 - `symbols-outline-ignore-variable-symbols`: whether to ignore variable nodes. Default `t`.
 - `symbols-outline-collapse-functions-on-startup`: whether to collapse function nodes on startup to hide the parameter nodes.
 - `symbols-outline-initial-folded-node-kinds`: kinds of nodes that will be folded on startup. Check out the variable `symbols-outline--kind-face-alist` for available node kinds.
-- `symbols-outline-format-symbol-name-p`: whether to format symbol names in the outline window. Default `t`.
+- `symbols-outline-format-symbol-name-p`: whether to format symbol names in the outline window. Default `t`. This turns on displaying e.g. `LongClassName::func` as `L::func`.
