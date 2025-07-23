@@ -51,7 +51,13 @@
   :group 'symbols-outline)
 
 (defcustom symbols-outline-window-width 30
-  "Width of symbols outline side window."
+  "Width of symbols outline side window, when the window is on the left or right."
+  :type 'integer
+  :group 'symbols-outline)
+
+(defcustom symbols-outline-window-height 10
+  "Height of symbols outline side window, when the window is on the top or
+bottom."
   :type 'integer
   :group 'symbols-outline)
 
@@ -336,6 +342,22 @@ Argument N means number of symbols to move."
       (symbols-outline--display-symbol-in-origin)))
   (symbols-outline--after-move))
 
+(defun symbols-outline-move-to-first ()
+  "Move to the first symbol."
+  (interactive)
+  (symbols-outline--before-move)
+  (beginning-of-buffer)
+  (symbols-outline--display-symbol-in-origin)
+  (symbols-outline--after-move))
+
+(defun symbols-outline-move-to-last ()
+  "Move to the first symbol."
+  (interactive)
+  (symbols-outline--before-move)
+  (end-of-buffer)
+  (symbols-outline--display-symbol-in-origin)
+  (symbols-outline--after-move))
+
 (defun symbols-outline-visit ()
   "Visit symbol under cursor."
   (interactive)
@@ -361,7 +383,7 @@ Argument N means number of symbols to move."
     (select-window symbols-outline--origin-window)
     (goto-char (point-min))
     (forward-line (1- line))
-    (recenter)))
+    (recenter 4)))
 
 (defun symbols-outline-visit-and-quit ()
   "Visit symbol under cursor and quit the symbols-outline window."
@@ -422,15 +444,45 @@ Argument N means number of symbols to move."
        (lambda (node) (setf (symbols-outline-node-collapsed node) nil)))))
   (symbols-outline--render))
 
+(defvar symbols-outline--window-widened nil)
+
+(defun symbols-outline-toggle-widen-window ()
+  "Widen the outline window to show all symbols at full length."
+  (interactive)
+  (when (memq symbols-outline-window-position '(left right))
+    (let ((offset (if (display-graphic-p) 4 2)))
+      (if symbols-outline--window-widened
+          (progn
+            (enlarge-window-horizontally
+             (- symbols-outline-window-width (window-width) offset))
+            (setq symbols-outline--window-widened nil))
+        (enlarge-window-horizontally
+         (+ offset (- (save-excursion
+                        (goto-char (point-min))
+                        (let ((max-len 0)
+                              (curr-len 0))
+                          (cl-loop when (eobp)
+                                   return (max curr-len max-len)
+                                   do
+                                   (setq curr-len (- (line-end-position)
+                                                     (line-beginning-position)))
+                                   (setq max-len (max curr-len max-len))
+                                   (forward-line))))
+                      (window-width))))
+        (setq symbols-outline--window-widened t)))))
+
 (defvar symbols-outline-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "g") 'symbols-outline-refresh)
+    (define-key map (kbd "w") 'symbols-outline-toggle-widen-window)
     (define-key map (kbd "n") 'symbols-outline-next)
     (define-key map (kbd "p") 'symbols-outline-prev)
     (define-key map (kbd "f") 'symbols-outline-next-same-level)
     (define-key map (kbd "b") 'symbols-outline-prev-same-level)
     (define-key map (kbd "u") 'symbols-outline-move-depth-up)
     (define-key map (kbd "d") 'symbols-outline-move-depth-down)
+    (define-key map (kbd "<") 'symbols-outline-move-to-first)
+    (define-key map (kbd ">") 'symbols-outline-move-to-last)
     (define-key map (kbd "TAB") 'symbols-outline-toggle-node)
     (define-key map [tab] 'symbols-outline-toggle-node)
     (define-key map (kbd "S-TAB") 'symbols-outline-cycle-visibility-globally)
@@ -593,6 +645,10 @@ Check out `symbols-outline--kind-face-alist' for available node kinds."
   (with-current-buffer symbols-outline-buffer-name
     (let* ((tree (with-current-buffer symbols-outline--origin
                    symbols-outline--entries-tree))
+           (nrows-to-top (when-let (win (get-buffer-window
+                                         symbols-outline-buffer-name))
+                           (with-selected-window win
+                             (cdr (nth 6 (posn-at-point))))))
            (symbols-outline--refreshing nil)
            (inhibit-read-only t))
       (delete-all-overlays)
@@ -603,7 +659,10 @@ Check out `symbols-outline--kind-face-alist' for available node kinds."
         (delete-char -1)
         (goto-char (point-min))
         (symbols-outline--after-move)
-        (symbols-outline--follow-symbol)))))
+        (symbols-outline--follow-symbol)
+        (when-let ((win (get-buffer-window symbols-outline-buffer-name)))
+          (with-selected-window win
+            (recenter nrows-to-top)))))))
 
 (defun symbols-outline--refresh-tree (tree)
   "Refresh symbols outline buffer content given TREE."
@@ -664,12 +723,14 @@ its children.")
       (let ((win (display-buffer-in-side-window
                   buf `((side . ,symbols-outline-window-position)
                         (slot . 1)
-                        (window-width . ,symbols-outline-window-width)))))
+                        (window-width . ,symbols-outline-window-width)
+                        (window-height . ,symbols-outline-window-height)))))
         (select-window win)
         (set-window-start win 1)
         (set-window-dedicated-p win t)
         (set-window-parameter win 'no-other-window symbols-outline-no-other-window)
-        (set-window-parameter win 'no-delete-other-windows symbols-outline-no-delete-other-window)))))
+        (set-window-parameter win 'no-delete-other-windows symbols-outline-no-delete-other-window))
+      (setq symbols-outline--window-widened nil))))
 
 (provide 'symbols-outline)
 

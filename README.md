@@ -44,13 +44,16 @@ This package is in Melpa so you can install it with your favorite package manage
 | Key   | Command                                   | Description                                                                       |
 |:------|:------------------------------------------|:----------------------------------------------------------------------------------|
 | g     | symbols-outline-refresh                   | Refresh                                                                           |
+| w     | symbols-outline-toggle-widen-window       | Toggle widening of the outline window                                             |
 | q     | quit-window                               | Close the outline window                                                          |
 | n     | symbols-outline-next                      | Move to the next symbol                                                           |
 | p     | symbols-outline-prev                      | Move to the previous symbol                                                       |
-| f     | symbols-outline-next-same-level           | Move to the the next symbol of the same level                                     |
-| b     | symbols-outline-prev-same-level           | Move to the the previous symbol of the same level                                 |
-| u     | symbols-outline-move-depth-up             | Move to the the parent symbol                                                     |
-| d     | symbols-outline-move-depth-down           | Move to the the child symbol                                                      |
+| f     | symbols-outline-next-same-level           | Move to the next symbol of the same level                                         |
+| b     | symbols-outline-prev-same-level           | Move to the previous symbol of the same level                                     |
+| u     | symbols-outline-move-depth-up             | Move to the parent symbol                                                         |
+| d     | symbols-outline-move-depth-down           | Move to the child symbol                                                          |
+| <     | symbols-outline-move-to-first             | Move to the first symbol                                                          |
+| >     | symbols-outline-move-to-last              | Move to the last symbol                                                           |
 | TAB   | symbols-outline-toggle-node               | Fold/unfold the children symbols                                                  |
 | S-TAB | symbols-outline-cycle-visibility-globally | Fold/unfold globally                                                              |
 | RET   | symbols-outline-visit                     | Go to the symbol under cursor in the original buffer                              |
@@ -59,7 +62,8 @@ This package is in Melpa so you can install it with your favorite package manage
 # Customizations
 
 - `symbols-outline-window-position`: the outline window position. Default `right`.
-- `symbols-outline-window-width`: the outline side window width. Default `30`.
+- `symbols-outline-window-width`: the outline side window width, when the window is on the left or right. Default `30`.
+- `symbols-outline-window-height`: the outline side window height, when the window is on the top or bottom. Default `10`.
 - `symbols-outline-no-other-window`: if `t`, the outline side window will not be selected with the `other-window` command. Instead, you can switch to the outline window with `symbols-outline-show`. Default `t`.
 - `symbols-outline-no-delete-other-window`: if `t`, the outline side window will not be deleted by the `delete-other-windows` command. Default `t`.
 - `symbols-outline-use-nerd-icon-in-gui`: whether to use nerd icons instead of SVGs in GUI Emacs.
