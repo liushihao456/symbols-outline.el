@@ -452,12 +452,11 @@ Argument N means number of symbols to move."
   (when (memq symbols-outline-window-position '(left right))
     (let ((offset (if (display-graphic-p) 4 2)))
       (if symbols-outline--window-widened
-          (progn
-            (enlarge-window-horizontally
-             (- symbols-outline-window-width (window-width) offset))
-            (setq symbols-outline--window-widened nil))
-        (enlarge-window-horizontally
-         (+ offset (- (save-excursion
+          (let ((delta (- symbols-outline-window-width (window-width) offset)))
+            (when (< delta 0)
+              (enlarge-window-horizontally delta)
+              (setq symbols-outline--window-widened nil)))
+        (let* ((buf-width (save-excursion
                         (goto-char (point-min))
                         (let ((max-len 0)
                               (curr-len 0))
@@ -467,9 +466,12 @@ Argument N means number of symbols to move."
                                    (setq curr-len (- (line-end-position)
                                                      (line-beginning-position)))
                                    (setq max-len (max curr-len max-len))
-                                   (forward-line))))
-                      (window-width))))
-        (setq symbols-outline--window-widened t)))))
+                                   (forward-line)))))
+               (delta (+ offset (- buf-width (window-width)))))
+          (when (> delta 0)
+            (enlarge-window-horizontally delta)
+            (setq symbols-outline--window-widened t)))
+        ))))
 
 (defvar symbols-outline-mode-map
   (let ((map (make-sparse-keymap)))
