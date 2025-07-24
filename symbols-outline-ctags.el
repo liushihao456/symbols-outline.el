@@ -153,28 +153,31 @@ Argument REFRESH-FN should be called upon the retrieved symbols tree."
     (with-current-buffer buf
       (erase-buffer)
       (setq buffer-undo-list t))
-    (let* ((process (start-file-process "symbols-outline-ctags"
-                                        buf
-                                        symbols-outline-ctags-executable
-                                        "--output-format=json"
-                                        "--kinds-all=*"
-                                        "--fields=NznsS"
-                                        "--sort=no"
-                                        (expand-file-name
-                                         (buffer-file-name
-                                          symbols-outline--origin)))))
-      (set-process-sentinel
-       process
-       (lambda (_proc status)
-         (unless (string-match-p "hangup\\|killed" status)
-           (if-let* ((n (with-current-buffer buf (count-lines (point-min) (point-max))))
-                     ((< n symbols-outline-max-symbols-threshold)))
-               (when (> n 0)
-                 (thread-last buf
-                              (symbols-outline-ctags--parse-output)
-                              (symbols-outline-ctags--parse-entries-into-tree)
-                              (funcall refresh-fn)))
-             (message "Too many symbols (%s)" n))))))))
+    (if (executable-find symbols-outline-ctags-executable)
+        (let* ((process (start-file-process "symbols-outline-ctags"
+                                            buf
+                                            symbols-outline-ctags-executable
+                                            "--output-format=json"
+                                            "--kinds-all=*"
+                                            "--fields=NznsS"
+                                            "--sort=no"
+                                            (expand-file-name
+                                             (buffer-file-name
+                                              symbols-outline--origin)))))
+          (set-process-sentinel
+           process
+           (lambda (_proc status)
+             (unless (string-match-p "hangup\\|killed" status)
+               (if-let* ((n (with-current-buffer buf (count-lines (point-min) (point-max))))
+                         ((< n symbols-outline-max-symbols-threshold)))
+                   (when (> n 0)
+                     (thread-last buf
+                                  (symbols-outline-ctags--parse-output)
+                                  (symbols-outline-ctags--parse-entries-into-tree)
+                                  (funcall refresh-fn)))
+                 (message "Too many symbols (%s)" n))))))
+      (with-current-buffer buf
+        (insert "Ctags not found. Please install universal-ctags.")))))
 
 (provide 'symbols-outline-ctags)
 
