@@ -355,6 +355,7 @@ Argument N means number of symbols to move."
   (interactive)
   (symbols-outline--before-move)
   (end-of-buffer)
+  (beginning-of-line)
   (symbols-outline--display-symbol-in-origin)
   (symbols-outline--after-move))
 
