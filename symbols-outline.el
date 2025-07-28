@@ -112,6 +112,9 @@ Check out `symbols-outline--format-symbol-name' for more details."
 (defvar symbols-outline-buffer-name "*Outline*"
   "Buffer name for symbols outline side window.")
 
+(defvar symbols-outline--previous-origin nil
+  "Previous original source buffer whose symbols outline is being shown.")
+
 (defvar symbols-outline--origin nil
   "Original source buffer whose symbols outline is being shown.")
 
@@ -663,7 +666,8 @@ Check out `symbols-outline--kind-face-alist' for available node kinds."
         (goto-char (point-min))
         (symbols-outline--after-move)
         (symbols-outline--follow-symbol)
-        (when-let ((win (get-buffer-window symbols-outline-buffer-name)))
+        (when-let (((eq symbols-outline--previous-origin symbols-outline--origin))
+                   (win (get-buffer-window symbols-outline-buffer-name)))
           (with-selected-window win
             (recenter nrows-to-top)))))))
 
@@ -714,6 +718,7 @@ its children.")
 (defun symbols-outline-show ()
   "Show symbols outline in side window."
   (interactive)
+  (setq symbols-outline--previous-origin symbols-outline--origin)
   (setq symbols-outline--origin (current-buffer))
   (setq symbols-outline--origin-window (selected-window))
   (let ((buf (get-buffer-create symbols-outline-buffer-name)))
